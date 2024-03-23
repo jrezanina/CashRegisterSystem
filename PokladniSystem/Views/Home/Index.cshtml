@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <input type="text" id="inputField" placeholder="Zadejte EAN">
+    <button class="b" id="printButton">Tisknout</button>
+    
+    
+</div>
+
+@section Scripts
+{
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+    <script>
+        document.getElementById('printButton').addEventListener('click', function () {
+
+            var inputValue = document.getElementById('inputField').value.trim();
+
+            inputValue = inputValue.endsWith(':') ? inputValue.slice(0, -1) : inputValue;
+
+            $.ajax({
+                url: '/Home/Print',
+                type: 'GET',
+                data: { inputValue: inputValue },
+                success: function (contentToPrint) {
+                    console.log(contentToPrint);
+
+                    printJS({ printable: contentToPrint, type: 'raw-html' });
+                },
+                error: function (error) {
+                    console.error('Chyba:', error);
+                }
+            });
+        });
+
+        document.getElementById('inputField').addEventListener('input', function () {
+            var inputValue = this.value.trim();
+            if (inputValue.endsWith(':')) {
+                var inputValue = inputValue.slice(0, -1);
+
+                $.ajax({
+                    url: '/Home/Print',
+                    type: 'GET',
+                    data: { inputValue: inputValue },
+                    success: function (contentToPrint) {
+                        console.log(contentToPrint);
+
+                        printJS({ printable: contentToPrint, type: 'raw-html' });
+                    },
+                    error: function (error) {
+                        console.error('Chyba:', error);
+                    }
+                });
+
+                this.value = '';
+            }
+        });
+    </script>
+}
