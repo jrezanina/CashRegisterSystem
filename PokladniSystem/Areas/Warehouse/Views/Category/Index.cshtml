@@ -1,0 +1,47 @@
+﻿@model IList<Category>
+
+@{
+    ViewData["Title"] = "Správa kategorií";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<a class="btn btn-primary mb-4" asp-action="Create">Přidat kategorii</a>
+@{
+    if (Model != null && Model.Count > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Id kategorie</th>
+                    <th scope="col">Název kategorie</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    <tr>
+                        <th scope="row">@Model[i].Id</th>
+                        <td>@Model[i].Name</td>
+                        <td><a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model[i].Id">Upravit</a></td>
+                        <td><a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model[i].Id" onclick="return ConfirmDelete();">Odstranit</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="lead text-dark mb-4">Nebyly nalezeny žádné kategorie</p>
+    }
+}
+
+@section Scripts
+{
+    <script src="~/js/dialogs.js"></script>
+}

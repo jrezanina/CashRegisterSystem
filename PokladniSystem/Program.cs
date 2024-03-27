@@ -1,15 +1,20 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PokladniSystem.Application.Abstraction;
 using PokladniSystem.Application.Implementation;
+using PokladniSystem.Domain.Entities;
+using PokladniSystem.Domain.Validations;
 using PokladniSystem.Infrastructure.Database;
 using PokladniSystem.Infrastructure.Identity;
 using PokladniSystem.Infrastructure.Identity.Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 
 string connectionString = builder.Configuration.GetConnectionString("MySQL");
 ServerVersion serverVersion = new MySqlServerVersion("8.0.34");
@@ -43,6 +48,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddScoped<IAccountService, AccountIdentityService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 
