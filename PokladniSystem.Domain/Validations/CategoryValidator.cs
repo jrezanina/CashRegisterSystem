@@ -12,7 +12,6 @@ namespace PokladniSystem.Domain.Validations
     {
         public CategoryValidator()
         {
-            //RuleFor(x => x.Name).NotEmpty().WithMessage("Délka názvu musí být v rozmezí 2 až 30 znaků.");KD
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Prosím, vyplňte název kategorie.")
                 .Length(2, 30).WithMessage("Délka názvu musí být v rozmezí 2 až 30 znaků.");

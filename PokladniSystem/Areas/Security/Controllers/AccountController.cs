@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokladniSystem.Application.Abstraction;
 using PokladniSystem.Application.Implementation;
 using PokladniSystem.Application.ViewModels;
+using PokladniSystem.Domain.Entities;
+using PokladniSystem.Domain.Validations;
 using PokladniSystem.Infrastructure.Identity.Enums;
 using PokladniSystem.Models;
+using PokladniSystem.Web.Areas.Warehouse.Controllers;
 using System.Diagnostics;
 
 namespace PokladniSystem.Controllers
@@ -12,33 +18,39 @@ namespace PokladniSystem.Controllers
     [Area("Security")]
     public class AccountController : Controller
     {
-        private readonly ILogger<AccountController> _logger;
-        private IAccountService _accountService;
+        IAccountService _accountService;
+        IValidator<LoginViewModel> _loginValidator;
+        IValidator<RegisterViewModel> _registerValidator;
 
-        public AccountController(ILogger<AccountController> logger, IAccountService accountService)
+        public AccountController(IAccountService accountService, IValidator<LoginViewModel> loginValidator, IValidator<RegisterViewModel> registerValidator)
         {
-            _logger = logger;
             _accountService = accountService;
+            _loginValidator = loginValidator;
+            _registerValidator = registerValidator;
         }
 
         public IActionResult Login()
         {
             return View();
         }
-
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel loginVM)
+        public async Task<IActionResult> Login(LoginViewModel viewModel)
         {
-            if (ModelState.IsValid)
+
+            ValidationResult result = _loginValidator.Validate(viewModel);
+
+
+            ModelState.Clear();
+            if (result.IsValid)
             {
-                bool isLogged = await _accountService.Login(loginVM);
+                bool isLogged = await _accountService.Login(viewModel);
                 if (isLogged)
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace(nameof(Controller), String.Empty), new { area = String.Empty });
-
-                loginVM.LoginFailed = true;
+                viewModel.LoginFailed = true;
             }
 
-            return View(loginVM);
+            result.AddToModelState(this.ModelState);
+            return View(viewModel);
         }
 
         [Authorize]
@@ -60,11 +72,13 @@ namespace PokladniSystem.Controllers
         public async Task<IActionResult> Register(RegisterViewModel viewModel)
         {
             viewModel.StoreId = (viewModel.Role == Roles.Cashier) ? viewModel.StoreId : null;
+            ValidationResult result = _registerValidator.Validate(viewModel);
 
-            if (ModelState.IsValid)
+
+            ModelState.Clear();
+            if (result.IsValid)
             {
                 string[] errors = await _accountService.Register(viewModel);
-
                 if (errors == null)
                 {
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace(nameof(Controller), String.Empty), new { area = String.Empty });
@@ -72,6 +86,7 @@ namespace PokladniSystem.Controllers
                 ModelState.AddModelError("GeneralRegisterError", "Nepodařilo se zaregistrovat uživatele!");
             }
 
+            result.AddToModelState(this.ModelState);
             return View(_accountService.GetRegisterViewModel(viewModel.Username, viewModel.Password, viewModel.RepeatedPassword, viewModel.Role, viewModel.StoreId));
         }
     }

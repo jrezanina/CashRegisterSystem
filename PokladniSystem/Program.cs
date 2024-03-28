@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PokladniSystem.Application.Abstraction;
 using PokladniSystem.Application.Implementation;
+using PokladniSystem.Application.Validations;
+using PokladniSystem.Application.ViewModels;
 using PokladniSystem.Domain.Entities;
 using PokladniSystem.Domain.Validations;
 using PokladniSystem.Infrastructure.Database;
@@ -14,6 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
+builder.Services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 
 string connectionString = builder.Configuration.GetConnectionString("MySQL");
