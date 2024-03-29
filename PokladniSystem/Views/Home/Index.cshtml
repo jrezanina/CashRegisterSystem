@@ -5,9 +5,13 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <input type="text" id="inputField" placeholder="Zadejte EAN">
-    <button class="b" id="printButton">Tisknout</button>
-    
-    
+    <button class="btn" id="printButton">Tisknout</button>
+
+    <input type="number" id="rowCount" placeholder="Zadejte počet řádků" required>
+    <button class="btn" id="generateButton">Generovat PDF</button>
+    <iframe id="pdfFrame" style="display: none;"></iframe>
+
+
 </div>
 
 @section Scripts
@@ -57,6 +61,23 @@
 
                 this.value = '';
             }
+        });
+
+        document.getElementById('generateButton').addEventListener('click', function () {
+            var inputValue = document.getElementById('rowCount').value.trim();
+            $.ajax({
+                url: '/Home/GeneratePDF',
+                type: 'GET',
+                data: { rowCount: inputValue },
+                success: function (response) {
+
+                    var iframe = document.getElementById('pdfFrame');
+                    iframe.src = '/Home/GeneratePDF?rowCount=' + inputValue;
+                    iframe.onload = function () {
+                        iframe.contentWindow.print();
+                    };
+                }
+            });
         });
     </script>
 }

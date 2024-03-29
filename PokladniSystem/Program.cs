@@ -53,6 +53,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<IAccountService, AccountIdentityService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider => new ReceiptService(serviceProvider.GetService<IWebHostEnvironment>().WebRootPath));
 
 var app = builder.Build();
 
