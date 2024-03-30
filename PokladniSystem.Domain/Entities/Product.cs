@@ -9,7 +9,10 @@ namespace PokladniSystem.Domain.Entities
 {
     public class Product : Entity<int>
     {
+        public string? EanCode {  get; set; }
+        public string? SellerCode {  get; set; }
         public string Name { get; set; }
+        public string ShortName { get; set; }
         public string? Description { get; set; }
         public double PriceVATFree { get; set; }
         public double PriceVAT { get; set; }

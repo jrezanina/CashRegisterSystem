@@ -9,12 +9,11 @@
 </div>
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
-    <div class="mb-3" style="display: none">
-        <label class="form-label" asp-for="Id">Číslo pokoje</label>
-        <input class="form-control" asp-for="Id" value="@Model.Id" readonly="true">
+    <div class="mb-3" style="display:none;">
+        <input class="form-control" asp-for="Id" value="@Model.Id">
     </div>
     <div class="mb-3">
-        <label class="form-label" asp-for="Name">Název kategorie</label>
+        <label class="form-label" asp-for="Name">Název kategorie:</label>
         <input class="form-control" asp-for="Name" value="@Model.Name">
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>

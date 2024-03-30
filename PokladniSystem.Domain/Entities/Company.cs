@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 
 namespace PokladniSystem.Domain.Entities
 {
-    public class Store : Entity<int>
+    public class Company : Entity<int>
     {
         public string Name { get; set; }
         [ForeignKey(nameof(Contact))]
         public int ContactId { get; set; }
 
-        // Phone, Email, Web, Street optional, City, PostalCode, BuildingNumber required
+        public string ICO { get; set; }
+        public string? DIC { get; set; }
+
+        // Phone, Email, Web optional, City, PostalCode, Street, BuildingNumber required
         public Contact? Contact { get; set; }
     }
 }

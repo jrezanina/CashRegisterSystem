@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokladniSystem.Infrastructure.Database;
 
@@ -10,9 +11,11 @@ using PokladniSystem.Infrastructure.Database;
 namespace PokladniSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(CRSDbContext))]
-    partial class CRSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240330080712_mysql_4_addedContact")]
+    partial class mysql_4_addedContact
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -195,6 +198,7 @@ namespace PokladniSystem.Infrastructure.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Street")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Web")

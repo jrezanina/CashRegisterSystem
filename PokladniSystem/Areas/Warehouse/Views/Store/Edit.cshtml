@@ -1,0 +1,58 @@
+﻿@model StoreViewModel
+
+@{
+    ViewData["Title"] = "Úprava prodejny";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <div class="mb-3" style="display:none;">
+        <input class="form-control" asp-for="Store.Id" value="@Model.Store.Id">
+        <input class="form-control" asp-for="Contact.Id" value="@Model.Contact.Id">
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Store.Name">Název prodejny:</label>
+        <input class="form-control" asp-for="Store.Name" value="@Model.Store.Name">
+        <span asp-validation-for="Store.Name" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Contact.Phone">Telefonní číslo:</label>
+        <input class="form-control" asp-for="Contact.Phone" value="@Model.Contact.Phone">
+        <span asp-validation-for="Contact.Phone" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Contact.Email">Email:</label>
+        <input class="form-control" asp-for="Contact.Email" value="@Model.Contact.Email">
+        <span asp-validation-for="Contact.Email" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Contact.Web">Web:</label>
+        <input class="form-control" asp-for="Contact.Web" value="@Model.Contact.Web">
+        <span asp-validation-for="Contact.Web" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Contact.City">Město:</label>
+        <input class="form-control" asp-for="Contact.City" value="@Model.Contact.City">
+        <span asp-validation-for="Contact.Phone" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Contact.PostalCode">PSČ:</label>
+        <input class="form-control" asp-for="Contact.PostalCode" value="@Model.Contact.PostalCode">
+        <span asp-validation-for="Contact.PostalCode" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Contact.Street">Ulice:</label>
+        <input class="form-control" asp-for="Contact.Street" value="@Model.Contact.Street">
+        <span asp-validation-for="Contact.Street" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Contact.BuildingNumber">Číslo popisné:</label>
+        <input class="form-control" asp-for="Contact.BuildingNumber" value="@Model.Contact.BuildingNumber">
+        <span asp-validation-for="Contact.BuildingNumber" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Uložit</button>
+</form>

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokladniSystem.Infrastructure.Database;
 
@@ -10,9 +11,11 @@ using PokladniSystem.Infrastructure.Database;
 namespace PokladniSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(CRSDbContext))]
-    partial class CRSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240329145210_mysql_3_addedCompanyInformations")]
+    partial class mysql_3_addedCompanyInformations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,10 +142,18 @@ namespace PokladniSystem.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("ContactId")
-                        .HasColumnType("int");
+                    b.Property<string>("BuildingNumber")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("DIC")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Email")
                         .HasColumnType("longtext");
 
                     b.Property<string>("ICO")
@@ -153,40 +164,6 @@ namespace PokladniSystem.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContactId");
-
-                    b.ToTable("Company");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ContactId = 1,
-                            DIC = "CZ12345678",
-                            ICO = "12345678",
-                            Name = "Společnost"
-                        });
-                });
-
-            modelBuilder.Entity("PokladniSystem.Domain.Entities.Contact", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("BuildingNumber")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("Phone")
                         .HasColumnType("longtext");
 
@@ -195,6 +172,7 @@ namespace PokladniSystem.Infrastructure.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Street")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Web")
@@ -202,7 +180,7 @@ namespace PokladniSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Company");
 
                     b.HasData(
                         new
@@ -210,7 +188,10 @@ namespace PokladniSystem.Infrastructure.Migrations
                             Id = 1,
                             BuildingNumber = "1234",
                             City = "Město",
+                            DIC = "CZ12345678",
                             Email = "email@spolecnost.cz",
+                            ICO = "12345678",
+                            Name = "Společnost",
                             Phone = "+420 123 456 789",
                             PostalCode = "123 45",
                             Street = "Ulice",
@@ -226,9 +207,6 @@ namespace PokladniSystem.Infrastructure.Migrations
 
                     b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("ReceiptSrc")
-                        .HasColumnType("longtext");
 
                     b.Property<int>("StoreId")
                         .HasColumnType("int");
@@ -303,10 +281,6 @@ namespace PokladniSystem.Infrastructure.Migrations
                     b.Property<string>("SellerCode")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("ShortName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<int>("VATRateId")
                         .HasColumnType("int");
 
@@ -344,16 +318,32 @@ namespace PokladniSystem.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("ContactId")
-                        .HasColumnType("int");
+                    b.Property<string>("BuildingNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("City")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("Id");
+                    b.Property<string>("Phone")
+                        .HasColumnType("longtext");
 
-                    b.HasIndex("ContactId");
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Street")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Web")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
 
                     b.ToTable("Stores");
                 });
@@ -537,17 +527,6 @@ namespace PokladniSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PokladniSystem.Domain.Entities.Company", b =>
-                {
-                    b.HasOne("PokladniSystem.Domain.Entities.Contact", "Contact")
-                        .WithMany()
-                        .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contact");
-                });
-
             modelBuilder.Entity("PokladniSystem.Domain.Entities.Order", b =>
                 {
                     b.HasOne("PokladniSystem.Domain.Entities.Store", "Store")
@@ -614,17 +593,6 @@ namespace PokladniSystem.Infrastructure.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("PokladniSystem.Domain.Entities.Store", b =>
-                {
-                    b.HasOne("PokladniSystem.Domain.Entities.Contact", "Contact")
-                        .WithMany()
-                        .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contact");
                 });
 
             modelBuilder.Entity("PokladniSystem.Infrastructure.Identity.User", b =>

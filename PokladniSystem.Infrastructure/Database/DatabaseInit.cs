@@ -17,21 +17,47 @@ namespace PokladniSystem.Infrastructure.Database
         {
             IList<VATRate> rates = new List<VATRate>();
 
-            rates.Add(new VATRate { Id = 1, Rate = 0  });
+            rates.Add(new VATRate { Id = 1, Rate = 0 });
             rates.Add(new VATRate { Id = 2, Rate = 12 });
             rates.Add(new VATRate { Id = 3, Rate = 21 });
 
             return rates;
         }
 
-        public IList<Store> GetDefaultStores()
+        public IList<Contact> GetDefaultCompanyContact()
         {
-            IList<Store> stores = new List<Store>();
+            IList<Contact> contacts = new List<Contact>();
 
-            stores.Add(new Store { Id = 1, Name = "Zlín" });
-            stores.Add(new Store { Id = 2, Name = "Olomouc" });
+            contacts.Add(new Contact
+            {
+                Id = 1,
+                Phone = "+420 123 456 789",
+                Email = "email@spolecnost.cz",
+                Web = "www.spolecnost.cz",
+                City = "Město",
+                PostalCode = "123 45",
+                Street = "Ulice",
+                BuildingNumber = "1234"
+            });
 
-            return stores;
+            return contacts;
         }
+
+        public IList<Company> GetDefaultCompanyInformations()
+        {
+            IList<Company> companies = new List<Company>();
+
+            companies.Add(new Company
+            {
+                Id = 1,
+                Name = "Společnost",
+                ContactId = 1,
+                ICO = "12345678",
+                DIC = "CZ12345678"
+            });
+
+            return companies;
+        }
+
     }
 }

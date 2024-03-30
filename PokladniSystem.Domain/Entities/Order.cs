@@ -16,6 +16,7 @@ namespace PokladniSystem.Domain.Entities
         public int UserId { get; set; }
         public int TotalPrice { get; set; }
         public DateTime DateTimeCreated { get; set; }
+        public string? ReceiptSrc { get; set; }
 
         public Store? Store { get; set; }
         public IUser? User { get; set; }

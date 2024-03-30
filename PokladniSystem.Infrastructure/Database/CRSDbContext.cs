@@ -19,6 +19,8 @@ namespace PokladniSystem.Infrastructure.Database
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<VATRate> VATRates { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Company> Company { get; set; }
 
         public CRSDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions){ }
 
@@ -29,7 +31,8 @@ namespace PokladniSystem.Infrastructure.Database
             DatabaseInit dbInit = new DatabaseInit();
 
             modelBuilder.Entity<VATRate>().HasData(dbInit.GetDefaultVATRates());
-            modelBuilder.Entity<Store>().HasData(dbInit.GetDefaultStores());
+            modelBuilder.Entity<Contact>().HasData(dbInit.GetDefaultCompanyContact());
+            modelBuilder.Entity<Company>().HasData(dbInit.GetDefaultCompanyInformations());
             modelBuilder.Entity<Order>().HasOne<User>(e => e.User as User);
         }
     }

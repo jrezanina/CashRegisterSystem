@@ -75,17 +75,6 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
 
             _categoryService.Edit(category);
             return RedirectToAction(nameof(CategoryController.Index));
-
-
-            if (ModelState.IsValid)
-            {
-                _categoryService.Edit(category);
-                return RedirectToAction(nameof(CategoryController.Index));
-            }
-            else
-            {
-                return View(category);
-            }
         }
 
         public IActionResult Delete(int id)
