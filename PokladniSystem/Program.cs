@@ -20,6 +20,7 @@ builder.Services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValid
 builder.Services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 builder.Services.AddScoped<IValidator<StoreViewModel>, StoreViewModelValidator>();
+builder.Services.AddScoped<IValidator<CompanyViewModel>, CompanyViewModelValidator>();
 
 string connectionString = builder.Configuration.GetConnectionString("MySQL");
 ServerVersion serverVersion = new MySqlServerVersion("8.0.34");
@@ -56,6 +57,7 @@ builder.Services.AddScoped<IAccountService, AccountIdentityService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider => new ReceiptService(serviceProvider.GetService<IWebHostEnvironment>().WebRootPath));
 
 var app = builder.Build();

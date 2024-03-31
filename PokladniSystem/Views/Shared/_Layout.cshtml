@@ -41,6 +41,7 @@
                         if (User.IsInRole(nameof(Roles.Admin)))
                         {
                             <a class="nav-link text-dark" asp-area="Security" asp-controller="Account" asp-action="Register">Nový účet</a>
+                            <a class="nav-link text-dark" asp-area="Settings" asp-controller="Company" asp-action="Edit">Správa společnosti</a>
                         }
                         if (User.IsInRole(nameof(Roles.WarehouseAccountant)))
                         {

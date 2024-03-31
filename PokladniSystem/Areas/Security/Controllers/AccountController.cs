@@ -29,6 +29,12 @@ namespace PokladniSystem.Controllers
             _registerValidator = registerValidator;
         }
 
+        /*public IActionResult Index()
+        {
+            IList<StoreViewModel> storeViewModels = _storeService.GetStoreViewModels();
+            return View(storeViewModels);
+        }*/
+
         public IActionResult Login()
         {
             return View();

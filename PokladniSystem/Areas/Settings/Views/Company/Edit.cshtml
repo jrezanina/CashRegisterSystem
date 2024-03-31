@@ -1,7 +1,7 @@
-﻿@model StoreViewModel
+﻿@model CompanyViewModel
 
 @{
-    ViewData["Title"] = "Úprava prodejny";
+    ViewData["Title"] = "Úprava společnosti";
 }
 
 <div class="text-center mb-4">
@@ -12,13 +12,23 @@
     <div class="row">
         <div class="col-md-6">
             <div class="mb-3" style="display:none;">
-                <input class="form-control" asp-for="Store.Id" value="@Model.Store.Id">
+                <input class="form-control" asp-for="Company.Id" value="@Model.Company.Id">
                 <input class="form-control" asp-for="Contact.Id" value="@Model.Contact.Id">
             </div>
             <div class="mb-3">
-                <label class="form-label" asp-for="Store.Name">Název prodejny:</label>
-                <input class="form-control" asp-for="Store.Name" value="@Model.Store.Name">
-                <span asp-validation-for="Store.Name" class="text-danger"></span>
+                <label class="form-label" asp-for="Company.Name">Název společnosti:</label>
+                <input class="form-control" asp-for="Company.Name" value="@Model.Company.Name">
+                <span asp-validation-for="Company.Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" asp-for="Company.ICO">IČO:</label>
+                <input class="form-control" asp-for="Company.ICO" value="@Model.Company.ICO">
+                <span asp-validation-for="Company.ICO" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" asp-for="Company.DIC">DIČ:</label>
+                <input class="form-control" asp-for="Company.DIC" value="@Model.Company.DIC">
+                <span asp-validation-for="Company.DIC" class="text-danger"></span>
             </div>
             <div class="mb-3">
                 <label class="form-label" asp-for="Contact.Phone">Telefonní číslo:</label>
@@ -30,13 +40,13 @@
                 <input class="form-control" asp-for="Contact.Email" value="@Model.Contact.Email">
                 <span asp-validation-for="Contact.Email" class="text-danger"></span>
             </div>
+        </div>
+        <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label" asp-for="Contact.Web">Web:</label>
                 <input class="form-control" asp-for="Contact.Web" value="@Model.Contact.Web">
                 <span asp-validation-for="Contact.Web" class="text-danger"></span>
             </div>
-        </div>
-        <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label" asp-for="Contact.City">Město:</label>
                 <input class="form-control" asp-for="Contact.City" value="@Model.Contact.City">
@@ -62,4 +72,5 @@
     <div class="text-center">
         <button type="submit" class="btn btn-primary">Uložit</button>
     </div>
+
 </form>

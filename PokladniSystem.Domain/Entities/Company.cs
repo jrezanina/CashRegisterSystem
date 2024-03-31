@@ -12,11 +12,10 @@ namespace PokladniSystem.Domain.Entities
         public string Name { get; set; }
         [ForeignKey(nameof(Contact))]
         public int ContactId { get; set; }
-
         public string ICO { get; set; }
         public string? DIC { get; set; }
 
-        // Phone, Email, Web optional, City, PostalCode, Street, BuildingNumber required
+        // Phone, Email, Web, Street optional, City, PostalCode, BuildingNumber required
         public Contact? Contact { get; set; }
     }
 }

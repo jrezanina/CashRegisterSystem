@@ -7,13 +7,21 @@
 <div class="text-center mb-4">
     <h1>@ViewData["Title"]</h1>
 </div>
-
-<form asp-action="Create" method="post" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label class="form-label" asp-for="Name">Název kategorie:</label>
-        <input class="form-control" asp-for="Name">
-        <span asp-validation-for="Name" class="text-danger"></span>
+<div class="d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Name">Název kategorie:</label>
+                        <input class="form-control" asp-for="Name">
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Přidat</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <button type="submit" class="btn btn-primary">Přidat</button>
-</form>
+</div>
