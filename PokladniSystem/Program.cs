@@ -18,6 +18,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
 builder.Services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
+builder.Services.AddScoped<IValidator<AccountAdminEditViewModel>, AccountAdminEditViewModelValidator>();
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 builder.Services.AddScoped<IValidator<StoreViewModel>, StoreViewModelValidator>();
 builder.Services.AddScoped<IValidator<CompanyViewModel>, CompanyViewModelValidator>();
@@ -86,7 +87,8 @@ using (var scope = app.Services.CreateScope())
     {
         user = new User
         {
-            UserName = userName
+            UserName = userName,
+            Active = true
         };
 
         var result = await userManager.CreateAsync(user, userPassword);

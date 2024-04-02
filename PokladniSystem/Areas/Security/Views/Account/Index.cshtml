@@ -1,5 +1,51 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IList<AccountViewModel>
+
 @{
+    ViewData["Title"] = "Správa účtů";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<a class="btn btn-primary mb-4" asp-action="Register">Nový účet</a>
+@{
+    if (Model != null && Model.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Uživatelské jméno</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Prodejna</th>
+                        <th scope="col">Aktivní</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <tr>
+                            <th scope="row">@Model[i].Username</th>
+                            <td>@Model[i].RoleName</td>
+                            <td>@Model[i].StoreName</td>
+                            <td>@Model[i].Active</td>
+                            <td><a class="btn btn-warning" asp-action="AdminEdit" asp-route-id="@Model[i].Username">Upravit</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p class="lead text-dark mb-4">Nebyly nalezeny žádné kategorie</p>
+    }
+}
+
+@section Scripts
+{
+    <script src="~/js/dialogs.js"></script>
 }

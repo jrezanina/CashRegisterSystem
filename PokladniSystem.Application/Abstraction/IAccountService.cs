@@ -14,6 +14,9 @@ namespace PokladniSystem.Application.Abstraction
         Task<string[]> Register(RegisterViewModel vm);
         Task<bool> Login(LoginViewModel vm);
         Task Logout();
+        Task AdminEdit(AccountAdminEditViewModel vm);
         RegisterViewModel GetRegisterViewModel(string? username, string? password, string? repeatedPassword, Roles? role, int? storeId);
+        Task<AccountAdminEditViewModel> GetAccountAdminEditViewModel(string username);
+        Task<IList<AccountViewModel>> GetAccountViewModels();
     }
 }

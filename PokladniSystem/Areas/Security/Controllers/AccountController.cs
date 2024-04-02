@@ -21,19 +21,22 @@ namespace PokladniSystem.Controllers
         IAccountService _accountService;
         IValidator<LoginViewModel> _loginValidator;
         IValidator<RegisterViewModel> _registerValidator;
+        IValidator<AccountAdminEditViewModel> _accountAdminEditViewModelValidator;
 
-        public AccountController(IAccountService accountService, IValidator<LoginViewModel> loginValidator, IValidator<RegisterViewModel> registerValidator)
+        public AccountController(IAccountService accountService, IValidator<LoginViewModel> loginValidator, IValidator<RegisterViewModel> registerValidator, IValidator<AccountAdminEditViewModel> accountAdminEditViewModelValidator)
         {
             _accountService = accountService;
             _loginValidator = loginValidator;
             _registerValidator = registerValidator;
+            _accountAdminEditViewModelValidator = accountAdminEditViewModelValidator;
         }
 
-        /*public IActionResult Index()
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> Index()
         {
-            IList<StoreViewModel> storeViewModels = _storeService.GetStoreViewModels();
-            return View(storeViewModels);
-        }*/
+            IList<AccountViewModel> userViewModels = await _accountService.GetAccountViewModels();
+            return View(userViewModels);
+        }
 
         public IActionResult Login()
         {
@@ -94,6 +97,32 @@ namespace PokladniSystem.Controllers
 
             result.AddToModelState(this.ModelState);
             return View(_accountService.GetRegisterViewModel(viewModel.Username, viewModel.Password, viewModel.RepeatedPassword, viewModel.Role, viewModel.StoreId));
+        }
+
+        [HttpGet]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public IActionResult AdminEdit(string id)
+        {
+            AccountAdminEditViewModel viewModel = _accountService.GetAccountAdminEditViewModel(id).Result;
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> AdminEdit(AccountAdminEditViewModel viewModel)
+        {
+            ValidationResult result = _accountAdminEditViewModelValidator.Validate(viewModel);
+
+
+            ModelState.Clear();
+            if (!result.IsValid)
+            {
+                result.AddToModelState(this.ModelState);
+                return View(viewModel);
+            }
+
+            await _accountService.AdminEdit(viewModel);
+            return RedirectToAction(nameof(AccountController.Index));
         }
     }
 }

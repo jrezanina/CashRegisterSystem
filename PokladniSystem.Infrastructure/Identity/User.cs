@@ -3,6 +3,7 @@ using PokladniSystem.Domain.Entities;
 using PokladniSystem.Domain.Entities.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,8 @@ namespace PokladniSystem.Infrastructure.Identity
     {
         [ForeignKey(nameof(Store))]
         public virtual int? StoreId { get; set; }
-
+        public bool Active { get; set; }
+        
         public Store? Store { get; set; }
     }
 }

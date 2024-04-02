@@ -15,15 +15,15 @@
                         <form asp-action="Login" method="post">
                             <div class="mb-3">
                                 <label class="form-label" asp-for="Username">Uživatelské jméno:</label>
-                                <input type="text" class="form-control" placeholder="Usename" asp-for="Username">
+                                <input type="text" class="form-control" asp-for="Username">
                                 <span asp-validation-for="Username" class="text-danger"></span>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label" asp-for="Password">Heslo:</label>
-                                <input type="password" class="form-control" placeholder="Password" asp-for="Password">
+                                <input type="password" class="form-control" asp-for="Password">
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
-                            <div class="text-center">
+                            <div class="text-center mb-4">
                                 <button type="submit" class="btn btn-primary">Přihlásit se</button>
                             </div>
                         </form>
