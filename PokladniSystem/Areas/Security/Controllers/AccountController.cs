@@ -19,22 +19,28 @@ namespace PokladniSystem.Controllers
     public class AccountController : Controller
     {
         IAccountService _accountService;
+        IHttpContextAccessor _contextAccessor;
         IValidator<LoginViewModel> _loginValidator;
         IValidator<RegisterViewModel> _registerValidator;
         IValidator<AccountAdminEditViewModel> _accountAdminEditViewModelValidator;
+        IValidator<AccountUserEditViewModel> _accountUserEditViewModelValidator;
 
-        public AccountController(IAccountService accountService, IValidator<LoginViewModel> loginValidator, IValidator<RegisterViewModel> registerValidator, IValidator<AccountAdminEditViewModel> accountAdminEditViewModelValidator)
+        public AccountController(IAccountService accountService, IHttpContextAccessor contextAccessor, IValidator<LoginViewModel> loginValidator, 
+            IValidator<RegisterViewModel> registerValidator, IValidator<AccountAdminEditViewModel> accountAdminEditViewModelValidator, 
+            IValidator<AccountUserEditViewModel> accountUserEditViewModelValidator)
         {
             _accountService = accountService;
+            _contextAccessor = contextAccessor;
             _loginValidator = loginValidator;
             _registerValidator = registerValidator;
             _accountAdminEditViewModelValidator = accountAdminEditViewModelValidator;
+            _accountUserEditViewModelValidator = accountUserEditViewModelValidator;
         }
 
         [Authorize(Roles = nameof(Roles.Admin))]
         public async Task<IActionResult> Index()
         {
-            IList<AccountViewModel> userViewModels = await _accountService.GetAccountViewModels();
+            IList<AccountViewModel> userViewModels = await _accountService.GetAccountViewModelsAsync();
             return View(userViewModels);
         }
 
@@ -42,17 +48,18 @@ namespace PokladniSystem.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel viewModel)
         {
-
+            viewModel.Active = await _accountService.AccountActiveAsync(viewModel.Username);
             ValidationResult result = _loginValidator.Validate(viewModel);
 
 
             ModelState.Clear();
             if (result.IsValid)
             {
-                bool isLogged = await _accountService.Login(viewModel);
+                bool isLogged = await _accountService.LoginAsync(viewModel);
                 if (isLogged)
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace(nameof(Controller), String.Empty), new { area = String.Empty });
                 viewModel.LoginFailed = true;
@@ -70,9 +77,9 @@ namespace PokladniSystem.Controllers
         }
 
         [Authorize(Roles = nameof(Roles.Admin))]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
-            RegisterViewModel viewModel = _accountService.GetRegisterViewModel(null, null, null, null, null);
+            RegisterViewModel viewModel = await _accountService.GetRegisterViewModelAsync(null, null, null, null, null);
             return View(viewModel);
         }
 
@@ -87,7 +94,7 @@ namespace PokladniSystem.Controllers
             ModelState.Clear();
             if (result.IsValid)
             {
-                string[] errors = await _accountService.Register(viewModel);
+                string[] errors = await _accountService.RegisterAsync(viewModel);
                 if (errors == null)
                 {
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace(nameof(Controller), String.Empty), new { area = String.Empty });
@@ -96,14 +103,42 @@ namespace PokladniSystem.Controllers
             }
 
             result.AddToModelState(this.ModelState);
-            return View(_accountService.GetRegisterViewModel(viewModel.Username, viewModel.Password, viewModel.RepeatedPassword, viewModel.Role, viewModel.StoreId));
+            return View(await _accountService.GetRegisterViewModelAsync(viewModel.Username, viewModel.Password, viewModel.RepeatedPassword, viewModel.Role, viewModel.StoreId));
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> UserEdit()
+        {
+            AccountUserEditViewModel viewModel = await _accountService.GetAccountUserEditViewModelAsync(_contextAccessor.HttpContext.User.Identity.Name);
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> UserEdit(AccountUserEditViewModel viewModel)
+        {
+            viewModel.Username = _contextAccessor.HttpContext.User.Identity.Name;
+            viewModel.OldPasswordFailed = !await _accountService.PasswordValidAsync(viewModel.Username, viewModel.OldPassword);
+            ValidationResult result = _accountUserEditViewModelValidator.Validate(viewModel);
+
+
+            ModelState.Clear();
+            if (!result.IsValid)
+            {
+                result.AddToModelState(this.ModelState);
+                return View(viewModel);
+            }
+
+            await _accountService.UserEditAsync(viewModel);
+            return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace(nameof(Controller), String.Empty), new { area = String.Empty });
         }
 
         [HttpGet]
         [Authorize(Roles = nameof(Roles.Admin))]
-        public IActionResult AdminEdit(string id)
+        public async Task<IActionResult> AdminEdit(string id)
         {
-            AccountAdminEditViewModel viewModel = _accountService.GetAccountAdminEditViewModel(id).Result;
+            AccountAdminEditViewModel viewModel = await _accountService.GetAccountAdminEditViewModelAsync(id);
             return View(viewModel);
         }
 
@@ -121,7 +156,7 @@ namespace PokladniSystem.Controllers
                 return View(viewModel);
             }
 
-            await _accountService.AdminEdit(viewModel);
+            await _accountService.AdminEditAsync(viewModel);
             return RedirectToAction(nameof(AccountController.Index));
         }
     }

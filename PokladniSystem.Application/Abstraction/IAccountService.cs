@@ -11,12 +11,17 @@ namespace PokladniSystem.Application.Abstraction
 {
     public interface IAccountService
     {
-        Task<string[]> Register(RegisterViewModel vm);
-        Task<bool> Login(LoginViewModel vm);
+        Task<string[]> RegisterAsync(RegisterViewModel vm);
+        Task<bool> LoginAsync(LoginViewModel vm);
         Task Logout();
-        Task AdminEdit(AccountAdminEditViewModel vm);
-        RegisterViewModel GetRegisterViewModel(string? username, string? password, string? repeatedPassword, Roles? role, int? storeId);
-        Task<AccountAdminEditViewModel> GetAccountAdminEditViewModel(string username);
-        Task<IList<AccountViewModel>> GetAccountViewModels();
+        Task<bool> PasswordValidAsync(string username, string password);
+        Task<bool> AccountActiveAsync(string username);
+        Task<bool> AdminEditAsync(AccountAdminEditViewModel vm);
+        Task<bool> UserEditAsync(AccountUserEditViewModel vm);
+        Task<RegisterViewModel> GetRegisterViewModelAsync(string? username, string? password, string? repeatedPassword, Roles? role, int? storeId);
+        Task<AccountAdminEditViewModel> GetAccountAdminEditViewModelAsync(string username);
+        Task<AccountUserEditViewModel> GetAccountUserEditViewModelAsync(string username);
+        Task<IList<AccountViewModel>> GetAccountViewModelsAsync();
+
     }
 }

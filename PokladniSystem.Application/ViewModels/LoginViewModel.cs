@@ -11,6 +11,8 @@ namespace PokladniSystem.Application.ViewModels
     {
         public string? Username { get; set; }
         public string? Password { get; set; }
+
+        public bool Active { get; set; }
         public bool LoginFailed { get; set; }
     }
 }

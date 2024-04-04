@@ -19,6 +19,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IValidator<RegisterViewModel>, RegisterViewModelValidator>();
 builder.Services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
 builder.Services.AddScoped<IValidator<AccountAdminEditViewModel>, AccountAdminEditViewModelValidator>();
+builder.Services.AddScoped<IValidator<AccountUserEditViewModel>, AccountUserEditViewModelValidator>();
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 builder.Services.AddScoped<IValidator<StoreViewModel>, StoreViewModelValidator>();
 builder.Services.AddScoped<IValidator<CompanyViewModel>, CompanyViewModelValidator>();
@@ -26,6 +27,8 @@ builder.Services.AddScoped<IValidator<CompanyViewModel>, CompanyViewModelValidat
 string connectionString = builder.Configuration.GetConnectionString("MySQL");
 ServerVersion serverVersion = new MySqlServerVersion("8.0.34");
 builder.Services.AddDbContext<CRSDbContext>(optionsBuilder => optionsBuilder.UseMySql(connectionString, serverVersion));
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddIdentity<User, Role>()
      .AddEntityFrameworkStores<CRSDbContext>()

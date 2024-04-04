@@ -22,7 +22,6 @@ namespace PokladniSystem.Application.Implementation
         SignInManager<User> _signInManager;
         CRSDbContext _dbContext;
 
-
         public AccountIdentityService(UserManager<User> userManager, RoleManager<Role> roleManager, SignInManager<User> signInManager, CRSDbContext dbContext)
         {
             _userManager = userManager;
@@ -31,8 +30,10 @@ namespace PokladniSystem.Application.Implementation
             _dbContext = dbContext;
         }
 
-        public RegisterViewModel GetRegisterViewModel(string? username, string? password, string? repeatedPassword, Roles? role, int? storeId)
+        public async Task<RegisterViewModel> GetRegisterViewModelAsync(string? username, string? password, string? repeatedPassword, Roles? role, int? storeId)
         {
+
+
             RegisterViewModel viewModel = new RegisterViewModel();
 
             viewModel.Username = username;
@@ -40,12 +41,12 @@ namespace PokladniSystem.Application.Implementation
             viewModel.RepeatedPassword = repeatedPassword;
             viewModel.Role = role;
             viewModel.StoreId = storeId;
-            viewModel.Stores = _dbContext.Stores.ToList();
+            viewModel.Stores = await _dbContext.Stores.ToListAsync();
 
             return viewModel;
         }
 
-        public async Task<IList<AccountViewModel>> GetAccountViewModels()
+        public async Task<IList<AccountViewModel>> GetAccountViewModelsAsync()
         {
             IList<AccountViewModel> viewModels = new List<AccountViewModel>();
             IList<User> users = await _userManager.Users.ToListAsync();
@@ -67,7 +68,7 @@ namespace PokladniSystem.Application.Implementation
 
         }
 
-        public async Task<AccountAdminEditViewModel> GetAccountAdminEditViewModel(string username)
+        public async Task<AccountAdminEditViewModel> GetAccountAdminEditViewModelAsync(string username)
         {
             AccountAdminEditViewModel viewModel = new AccountAdminEditViewModel();
 
@@ -81,8 +82,21 @@ namespace PokladniSystem.Application.Implementation
 
         }
 
-        public async Task AdminEdit(AccountAdminEditViewModel vm)
+        public async Task<AccountUserEditViewModel> GetAccountUserEditViewModelAsync(string username)
         {
+            AccountUserEditViewModel viewModel = new AccountUserEditViewModel();
+
+            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+
+            viewModel.Username = user.UserName;
+
+            return viewModel;
+
+        }
+
+        public async Task<bool> AdminEditAsync(AccountAdminEditViewModel vm)
+        {
+            bool resultPassword = true;
             User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == vm.Username);
 
             if (user != null)
@@ -91,14 +105,55 @@ namespace PokladniSystem.Application.Implementation
                 if (vm.Password != null)
                 {
                     var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                    await _userManager.ResetPasswordAsync(user, token, vm.Password);
+                    var resultReset = await _userManager.ResetPasswordAsync(user, token, vm.Password);
+                    resultPassword = resultReset.Succeeded;
                 }
-                await _userManager.UpdateAsync(user);
-                await _dbContext.SaveChangesAsync();
+                var resultUpdate = await _userManager.UpdateAsync(user);
+                return (resultPassword && resultUpdate.Succeeded);
             }
+
+            return false;
         }
 
-        public async Task<bool> Login(LoginViewModel vm)
+        public async Task<bool> UserEditAsync(AccountUserEditViewModel vm)
+        {
+            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == vm.Username);
+
+            if (user != null)
+            {
+                if (vm.Password != null)
+                {
+                    var result = await _userManager.ChangePasswordAsync(user, vm.OldPassword, vm.Password);
+                    return result.Succeeded;
+                }
+            }
+
+            return false;
+        }
+
+        public async Task<bool> AccountActiveAsync(string username)
+        {
+            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+
+            if (user != null)
+            {
+                return user.Active;
+            }
+            return false;
+        }
+
+        public async Task<bool> PasswordValidAsync(string username, string password)
+        {
+            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+
+            if (user != null && password != null)
+            {
+                return await _userManager.CheckPasswordAsync(user, password);
+            }
+            return false;
+        }
+
+        public async Task<bool> LoginAsync(LoginViewModel vm)
         {
             var result = await _signInManager.PasswordSignInAsync(vm.Username, vm.Password, true, true);
             return result.Succeeded;
@@ -109,12 +164,13 @@ namespace PokladniSystem.Application.Implementation
             return _signInManager.SignOutAsync();
         }
 
-        public async Task<string[]> Register(RegisterViewModel vm)
+        public async Task<string[]> RegisterAsync(RegisterViewModel vm)
         {
             User user = new User()
             {
                 UserName = vm.Username,
-                StoreId = vm.StoreId
+                StoreId = vm.StoreId,
+                Active = true
             };
 
             string[] errors = null;

@@ -17,6 +17,8 @@ namespace PokladniSystem.Application.Validations
                 .NotEmpty().WithMessage("Prosím, vyplňte uživatelské jméno.");
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Prosím, vyplňte heslo.");
+            RuleFor(x => x.Active)
+                .Equal(true).WithMessage("Účet není aktivní.");
         }
     }
 }

@@ -1,0 +1,36 @@
+﻿@using PokladniSystem.Infrastructure.Identity.Enums
+@model AccountUserEditViewModel
+@{
+    ViewData["Title"] = "Změna hesla";
+}
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+<div class="d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <form asp-action="UserEdit" method="post">
+                    <div class="mb-3">
+                        <div class="mb-3">
+                            <label class="form-label" asp-for="OldPassword">Staré heslo:</label>
+                            <input type="password" class="form-control" asp-for="OldPassword">
+                            <span asp-validation-for="OldPassword" class="text-danger"></span>
+                        </div>
+                        <label class="form-label" asp-for="Password">Nové heslo:</label>
+                        <input type="password" class="form-control" asp-for="Password">
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="RepeatedPassword">Potvrzení nového hesla:</label>
+                        <input type="password" class="form-control" asp-for="RepeatedPassword">
+                        <span asp-validation-for="RepeatedPassword" class="text-danger"></span>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Uložit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
