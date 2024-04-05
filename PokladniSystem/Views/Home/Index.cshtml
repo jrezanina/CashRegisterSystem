@@ -71,7 +71,7 @@
                 data: { rowCount: inputValue },
                 success: function (response) {
 
-                    var iframe = document.getElementById('pdfFrame');
+                   var iframe = document.getElementById('pdfFrame');
                     iframe.src = '/Home/GeneratePDF?rowCount=' + inputValue;
                     iframe.onload = function () {
                         iframe.contentWindow.print();

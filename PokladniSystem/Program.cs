@@ -62,7 +62,16 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
-builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider => new ReceiptService(serviceProvider.GetService<IWebHostEnvironment>().WebRootPath));
+//builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider => new ReceiptService(serviceProvider.GetService<IWebHostEnvironment>().WebRootPath));
+builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider =>
+{
+    var webRootPath = serviceProvider.GetService<IWebHostEnvironment>().WebRootPath;
+    var dbContext = serviceProvider.GetService<CRSDbContext>();
+    var companyService = serviceProvider.GetService<ICompanyService>();
+    var storeService = serviceProvider.GetService<IStoreService>();
+
+    return new ReceiptService(webRootPath, dbContext, companyService, storeService);
+});
 
 var app = builder.Build();
 
