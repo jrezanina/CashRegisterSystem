@@ -1,0 +1,76 @@
+﻿@using PokladniSystem.Infrastructure.Identity.Enums
+@model ProductListViewModel
+
+@{
+    ViewData["Title"] = "Seznam produktů";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+@if (User.IsInRole(nameof(Roles.WarehouseAccountant)))
+{
+    <a class="btn btn-primary mb-4" asp-action="Create">Přidat produkt</a>
+}
+@{
+    if (Model != null && Model.Products.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Kód EAN</th>
+                        <th scope="col">Kód prodejce</th>
+                        <th scope="col">Název</th>
+                        <th scope="col">Zkrácený název</th>
+                        <th scope="col">Popis</th>
+                        <th scope="col">Cena bez DPH</th>
+                        <th scope="col">Cena s DPH</th>
+                        <th scope="col">Prodejní cena</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @for (int i = 0; i < Model.Products.Count; i++)
+                    {
+                        <tr>
+                            <th scope="row">@Model.Products[i].Id</th>
+                            <td>@Model.Products[i].EanCode</td>
+                            <td>@Model.Products[i].SellerCode</td>
+                            <td>@Model.Products[i].Name</td>
+                            <td>@Model.Products[i].ShortName</td>
+                            <td>@Model.Products[i].Description</td>
+                            <td>@Model.Products[i].PriceVATFree</td>
+                            <td>@Model.Products[i].PriceVAT</td>
+                            <td>@Model.Products[i].PriceSale</td>
+                            @if (User.IsInRole(nameof(Roles.WarehouseAccountant)) || User.IsInRole(nameof(Roles.Manager)))
+                            {
+                                <td><a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Products[i].Id">Upravit</a></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Stránkování">
+                <ul class="pagination">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(Model.CurrentPage == i ? "active" : string.Empty)">
+                            <a class="page-link" href="?page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <p class="lead text-dark mb-4">Nebyly nalezeny žádné produkty</p>
+    }
+}

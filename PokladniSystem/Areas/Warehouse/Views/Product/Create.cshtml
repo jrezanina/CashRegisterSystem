@@ -1,0 +1,151 @@
+﻿@model ProductViewModel
+
+@{
+    ViewData["Title"] = "Přidání nového produktu";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label" asp-for="Product.Name">Název produktu:</label>
+                <input class="form-control" asp-for="Product.Name">
+                <span asp-validation-for="Product.Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" asp-for="Product.ShortName">Zkrácený název:</label>
+                <input class="form-control" asp-for="Product.ShortName">
+                <span asp-validation-for="Product.ShortName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" asp-for="Product.Description">Popis:</label>
+                <input class="form-control" asp-for="Product.Description">
+                <span asp-validation-for="Product.Description" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-6">
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Product.EanCode">Kód EAN:</label>
+                        <input class="form-control" asp-for="Product.EanCode">
+                        <span asp-validation-for="Product.EanCode" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Product.EanCode">Kód prodejce:</label>
+                        <input class="form-control" asp-for="Product.SellerCode">
+                        <span asp-validation-for="Product.SellerCode" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Product.PriceVATFree">Cena bez DPH:</label>
+                        <input class="form-control" asp-for="Product.PriceVATFree">
+                        <span asp-validation-for="Product.PriceVATFree" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="mb-3" id="VATSelect">
+                        <label class="form-label" asp-for="Product.VATRateId">DPH:</label>
+                        <select class="form-select" asp-for="Product.VATRateId">
+                            @foreach (var rate in Model.VATRates)
+                            {
+                                if (Model.Product != null && Model.Product.VATRateId != null && rate.Id == Model.Product.VATRateId)
+                                {
+                                    <option value="@rate.Id" selected>@rate.Rate</option>
+                                }
+                                else
+                                {
+                                    <option value="@rate.Id">@rate.Rate</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="Product.VATRateId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Product.PriceVAT">Cena s DPH:</label>
+                        <input class="form-control" asp-for="Product.PriceVAT" readonly="true">
+                        <span asp-validation-for="Product.PriceVAT" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" asp-for="Product.PriceSale">Prodejní cena:</label>
+                <input class="form-control" asp-for="Product.PriceSale">
+                <span asp-validation-for="Product.PriceSale" class="text-danger"></span>
+            </div>
+        </div>
+        @if (Model.Categories != null && Model.Categories.Count > 0)
+        {
+            <div class="mb-3">
+                <label class="form-label">Kategorie:</label><br />
+                <div class="row">
+                    @foreach (var category in Model.Categories)
+                    {
+                        <div class="col-md-3 col-6">
+                            <div class="form-check">
+                                <label class="form-check-label" asp-for="SelectedCategories[category.Id]">@category.Name</label>
+                                <input class="form-check-input" type="checkbox" asp-for="SelectedCategories[category.Id]">
+                            </div>
+                        </div>
+                    }
+                </div>
+                <span asp-validation-for="SelectedCategories" class="text-danger"></span>
+            </div>
+        }
+    </div>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary text-center">Přidat</button>
+    </div>
+</form>
+
+@section Scripts
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var priceVATFreeInput = document.getElementById("Product_PriceVATFree");
+            var VATRateSelect = document.getElementById("Product_VATRateId");
+            var priceVATInput = document.getElementById("Product_PriceVAT");
+            var priceSaleInput = document.getElementById("Product_PriceSale");
+
+            function recalculatePriceVAT() {
+                var priceVATFree = parseFloat(priceVATFreeInput.value.replace(",", "."));
+                var VATRate = VATRateSelect.options[VATRateSelect.selectedIndex].text;
+                var priceVAT = priceVATFree + priceVATFree * (VATRate / 100);
+
+                priceVATInput.value = priceVAT.toLocaleString(undefined, { minimumFractionDigits: 2 });
+            }
+
+            priceSaleInput.addEventListener("input", function () {
+
+                if (this.value.includes(".")) {
+                    this.value = this.value.replace(".", ",");
+                }
+            });
+
+            priceVATFreeInput.addEventListener("input", function () {
+
+                if (this.value.includes(".")) {
+                    this.value = this.value.replace(".", ",");
+                }
+
+                recalculatePriceVAT();
+            });
+
+            VATRateSelect.addEventListener("change", recalculatePriceVAT);
+
+            recalculatePriceVAT();
+        });
+
+    </script>
+}

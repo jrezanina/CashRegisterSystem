@@ -23,6 +23,7 @@ builder.Services.AddScoped<IValidator<AccountUserEditViewModel>, AccountUserEdit
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 builder.Services.AddScoped<IValidator<StoreViewModel>, StoreViewModelValidator>();
 builder.Services.AddScoped<IValidator<CompanyViewModel>, CompanyViewModelValidator>();
+builder.Services.AddScoped<IValidator<ProductViewModel>, ProductViewModelValidator>();
 
 string connectionString = builder.Configuration.GetConnectionString("MySQL");
 ServerVersion serverVersion = new MySqlServerVersion("8.0.34");
@@ -62,7 +63,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
-//builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider => new ReceiptService(serviceProvider.GetService<IWebHostEnvironment>().WebRootPath));
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider =>
 {
     var webRootPath = serviceProvider.GetService<IWebHostEnvironment>().WebRootPath;
