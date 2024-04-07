@@ -10,8 +10,9 @@ namespace PokladniSystem.Application.Abstraction
 {
     public interface IProductService
     {
+        Product GetProduct(string? eanCode, string? sellerCode);
         Task<IList<Product>> GetProductsAsync(int pageNumber, int pageSize);
-        Task<ProductListViewModel> GetProductListViewModelAsync(int page, int pageSize);
+        Task<ProductListViewModel> GetProductListViewModelAsync(int page, int pageSize, string? eanCode, string? sellerCode);
         Task<ProductViewModel> GetProductViewModelAsync(ProductViewModel? vm);
         void Create(ProductViewModel vm);
         void Edit(ProductViewModel vm);

@@ -3,6 +3,7 @@ using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata;
 using PokladniSystem.Application.Abstraction;
 using PokladniSystem.Application.Implementation;
 using PokladniSystem.Application.ViewModels;
@@ -24,9 +25,9 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
             _productViewModelValidator = productViewModelValidator;
         }
 
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1, string eanCode = null, string sellerCode = null)
         {
-            ProductListViewModel viewModel = await _productService.GetProductListViewModelAsync(page, 10);
+            ProductListViewModel viewModel = await _productService.GetProductListViewModelAsync(page, 10, eanCode, sellerCode);
             
             return View(viewModel);
         }
@@ -41,9 +42,11 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ProductViewModel viewModel) 
         {
-            int br = 0;
             viewModel = await _productService.GetProductViewModelAsync(viewModel);
             ValidationResult result = _productViewModelValidator.Validate(viewModel);
+            viewModel.Product.PriceVAT = Math.Round(viewModel.Product.PriceVATFree * (1 + viewModel.VATRates.FirstOrDefault(r => r.Id == viewModel.Product.VATRateId).Rate/100.0),2);
+            viewModel.Product.PriceVATFree = Math.Round(viewModel.Product.PriceVATFree, 2);
+            viewModel.Product.PriceSale = Math.Round(viewModel.Product.PriceSale, 2);
 
             ModelState.Clear();
             if (!result.IsValid)

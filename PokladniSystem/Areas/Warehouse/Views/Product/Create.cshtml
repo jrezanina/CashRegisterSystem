@@ -119,8 +119,9 @@
             var priceSaleInput = document.getElementById("Product_PriceSale");
 
             function recalculatePriceVAT() {
-                var priceVATFree = parseFloat(priceVATFreeInput.value.replace(",", "."));
-                var VATRate = VATRateSelect.options[VATRateSelect.selectedIndex].text;
+                var priceVATFreeValue = priceVATFreeInput.value.replace(",", ".");
+                var priceVATFree = parseFloat(priceVATFreeValue) || 0;
+                var VATRate = parseFloat(VATRateSelect.options[VATRateSelect.selectedIndex].text) || 0;
                 var priceVAT = priceVATFree + priceVATFree * (VATRate / 100);
 
                 priceVATInput.value = priceVAT.toLocaleString(undefined, { minimumFractionDigits: 2 });

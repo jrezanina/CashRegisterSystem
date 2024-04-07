@@ -13,8 +13,21 @@
 {
     <a class="btn btn-primary mb-4" asp-action="Create">Přidat produkt</a>
 }
+<form method="get" action="@Url.Action("Index")" class="row">
+    <div class="col-sm-4 mb-3">
+        <label for="eanCode" class="form-label">Kód EAN:</label>
+        <input type="text" name="eanCode" id="eanCode" class="form-control">
+    </div>
+    <div class="col-sm-4 mb-3">
+        <label for="sellerCode" class="form-label">Kód prodejce:</label>
+        <input type="text" name="sellerCode" id="sellerCode" class="form-control">
+    </div>
+    <div class="col-sm-4 mb-3 d-flex align-items-end justify-content-start">
+        <button type="submit" class="btn btn-primary">Vyhledat</button>
+    </div>
+</form>
 @{
-    if (Model != null && Model.Products.Count > 0)
+    if (Model != null && Model.Products != null && Model.Products.Count > 0)
     {
         <div class="table-responsive">
             <table class="table">

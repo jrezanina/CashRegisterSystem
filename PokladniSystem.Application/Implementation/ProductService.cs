@@ -47,7 +47,7 @@ namespace PokladniSystem.Application.Implementation
                 }
                 _dbContext.SaveChanges();
             }
-            
+
         }
 
         public void Edit(ProductViewModel vm)
@@ -66,13 +66,9 @@ namespace PokladniSystem.Application.Implementation
                 _dbContext.SaveChanges();
             }*/
         }
-        public Product GetProduct(int? id, string? eanCode, string? sellerCode)
+        public Product GetProduct(string? eanCode, string? sellerCode)
         {
-            if (id != null)
-            {
-                return _dbContext.Products.FirstOrDefault(p => p.Id == id);
-            }
-            else if (!string.IsNullOrEmpty(eanCode))
+            if (!string.IsNullOrEmpty(eanCode))
             {
                 return _dbContext.Products.FirstOrDefault(p => p.EanCode == eanCode);
             }
@@ -94,10 +90,21 @@ namespace PokladniSystem.Application.Implementation
             return totalPages;
         }
 
-        public async Task<ProductListViewModel> GetProductListViewModelAsync(int page, int pageSize)
+        public async Task<ProductListViewModel> GetProductListViewModelAsync(int page, int pageSize, string? eanCode, string? sellerCode)
         {
-            IList<Product> products = await GetProductsAsync(page, pageSize);
-            int pageCount = GetProductPagesCount(pageSize);
+            IList<Product> products;
+            int pageCount = 1; 
+            
+            if (eanCode != null || sellerCode != null)
+            {
+                Product product = GetProduct(eanCode, sellerCode);
+                products = product != null ? new List<Product>() { product } : null;
+            }
+            else
+            {
+                products = await GetProductsAsync(page, pageSize);
+                pageCount = GetProductPagesCount(pageSize);
+            }
 
             ProductListViewModel vm = new ProductListViewModel()
             {
@@ -117,7 +124,7 @@ namespace PokladniSystem.Application.Implementation
             ProductViewModel viewModel = new ProductViewModel()
             {
                 Product = vm != null ? vm.Product : null,
-                SelectedCategories = vm != null ? vm.SelectedCategories : null, 
+                SelectedCategories = vm != null ? vm.SelectedCategories : null,
                 Categories = categories,
                 VATRates = vatRates
             };
