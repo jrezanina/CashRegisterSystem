@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using iText.Commons.Actions.Contexts;
+using Microsoft.EntityFrameworkCore;
 using PokladniSystem.Application.Abstraction;
 using PokladniSystem.Application.ViewModels;
 using PokladniSystem.Domain.Entities;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace PokladniSystem.Application.Implementation
 {
@@ -18,11 +20,45 @@ namespace PokladniSystem.Application.Implementation
         {
             _dbContext = dbContext;
         }
-        public async Task<IList<Product>> GetProductsAsync(int pageNumber, int pageSize)
+
+        /*public async Task<IList<Product>> GetProductsAsync(int pageNumber, int pageSize)
         {
+
             int skipItemsCount = (pageNumber - 1) * pageSize;
 
             return await _dbContext.Products.OrderBy(p => p.Id).Skip(skipItemsCount).Take(pageSize).ToListAsync();
+        }*/
+
+        public async Task<(IList<Product> products, int productCount)> GetProductsAsync(string? eanCode, string? sellerCode, int? categoryId, int? vatRateId, int pageNumber, int pageSize)
+        {
+            IQueryable<Product> productsQuery = _dbContext.Products;
+
+            if (!string.IsNullOrEmpty(eanCode))
+            {
+                productsQuery = productsQuery.Where(p => p.EanCode == eanCode);
+            }
+
+            if (!string.IsNullOrEmpty(sellerCode))
+            {
+                productsQuery = productsQuery.Where(p => p.SellerCode == sellerCode);
+            }
+
+            if (categoryId != null)
+            {
+                var productIdsWithCategory = _dbContext.ProductCategories.Where(pc => pc.CategoryId == categoryId).Select(pc => pc.ProductId);
+                productsQuery = productsQuery.Where(p => productIdsWithCategory.Contains(p.Id));
+            }
+
+            if (vatRateId != null)
+            {
+                productsQuery = productsQuery.Where(p => p.VATRateId == vatRateId);
+            }
+
+            IList<Product> filteredProducts = await productsQuery.ToListAsync();
+            filteredProducts = filteredProducts.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            return (filteredProducts, await productsQuery.CountAsync());
+
         }
 
         public void Create(ProductViewModel vm)
@@ -52,20 +88,52 @@ namespace PokladniSystem.Application.Implementation
 
         public void Edit(ProductViewModel vm)
         {
-            /*Product? productItem = _dbContext.Products.FirstOrDefault(p => p.Id == product.Id);
+            Product? productItem = _dbContext.Products.FirstOrDefault(p => p.Id == vm.Product.Id);
+            IList<int>? selectedCategoryIds = vm.SelectedCategories.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+
             if (productItem != null)
             {
-                productItem.EanCode = product.EanCode;
-                productItem.SellerCode = product.SellerCode;
-                productItem.Name = product.Name;
-                productItem.ShortName = product.ShortName;
-                productItem.Description = product.Description;
-                productItem.PriceVATFree = product.PriceVATFree;
-                productItem.PriceVAT = product.PriceVAT;
-                productItem.PriceSale = product.PriceSale;
+                productItem.EanCode = vm.Product.EanCode;
+                productItem.SellerCode = vm.Product.SellerCode;
+                productItem.Name = vm.Product.Name;
+                productItem.ShortName = vm.Product.ShortName;
+                productItem.Description = vm.Product.Description;
+                productItem.PriceVATFree = vm.Product.PriceVATFree;
+                productItem.PriceVAT = vm.Product.PriceVAT;
+                productItem.PriceSale = vm.Product.PriceSale;
+                productItem.VATRateId = vm.Product.VATRateId;
                 _dbContext.SaveChanges();
-            }*/
+            }
+
+            var productCategories = _dbContext.ProductCategories.Where(pc => pc.ProductId == vm.Product.Id);
+            if (productCategories != null)
+            {
+                _dbContext.ProductCategories.RemoveRange(productCategories);
+                _dbContext.SaveChanges();
+            }
+
+            foreach (var categoryId in selectedCategoryIds)
+            {
+                _dbContext.ProductCategories.Add(new ProductCategory()
+                {
+                    ProductId = vm.Product.Id,
+                    CategoryId = categoryId
+                });
+            }
+            _dbContext.SaveChanges();
         }
+
+        public void EditPriceSale(ProductViewModel vm)
+        {
+            Product? productItem = _dbContext.Products.FirstOrDefault(p => p.Id == vm.Product.Id);
+
+            if (productItem != null)
+            {
+                productItem.PriceSale = vm.Product.PriceSale;
+                _dbContext.SaveChanges();
+            }
+        }
+
         public Product GetProduct(string? eanCode, string? sellerCode)
         {
             if (!string.IsNullOrEmpty(eanCode))
@@ -82,36 +150,21 @@ namespace PokladniSystem.Application.Implementation
             }
         }
 
-        public int GetProductPagesCount(int pageSize)
+        public int GetProductPagesCount(int pageSize, int pageCount)
         {
-            int productCount = _dbContext.Products.Count();
-            int totalPages = (int)Math.Ceiling((double)productCount / pageSize);
+            int totalPages = (int)Math.Ceiling((double)pageCount / pageSize);
 
             return totalPages;
         }
 
-        public async Task<ProductListViewModel> GetProductListViewModelAsync(int page, int pageSize, string? eanCode, string? sellerCode)
+        public async Task<ProductListViewModel> GetProductListViewModelAsync(ProductListViewModel vm)
         {
-            IList<Product> products;
-            int pageCount = 1; 
-            
-            if (eanCode != null || sellerCode != null)
-            {
-                Product product = GetProduct(eanCode, sellerCode);
-                products = product != null ? new List<Product>() { product } : null;
-            }
-            else
-            {
-                products = await GetProductsAsync(page, pageSize);
-                pageCount = GetProductPagesCount(pageSize);
-            }
-
-            ProductListViewModel vm = new ProductListViewModel()
-            {
-                Products = products,
-                CurrentPage = page,
-                TotalPages = pageCount
-            };
+            var (filteredProducts, productCount) = await GetProductsAsync(vm.EanCodeSearch, vm.SellerCodeSearch, vm.CategoryIdSearch, vm.VATRateIdSearch, vm.CurrentPage, vm.PageSize);
+            vm.Categories = await _dbContext.Categories.ToListAsync();
+            vm.VATRates = await _dbContext.VATRates.ToListAsync();
+            vm.Products = filteredProducts;
+            vm.TotalPages = GetProductPagesCount(vm.PageSize, productCount);
+            vm.CurrentPage = vm.CurrentPage != 0 ? vm.CurrentPage : 1;
 
             return vm;
         }
@@ -131,10 +184,29 @@ namespace PokladniSystem.Application.Implementation
 
             return viewModel;
         }
+
+        public async Task<ProductViewModel> GetProductViewModelAsync(int productId)
+        {
+            IList<Category> categories = await _dbContext.Categories.ToListAsync();
+            IList<VATRate> vatRates = await _dbContext.VATRates.ToListAsync();
+
+            Dictionary<int, bool> selectedCategories = new Dictionary<int, bool>();
+
+            foreach (var category in categories)
+            {
+                selectedCategories.Add(category.Id, _dbContext.ProductCategories.Any(pc => pc.ProductId == productId && pc.CategoryId == category.Id));
+            }
+
+            ProductViewModel viewModel = new ProductViewModel()
+            {
+                Product = _dbContext.Products.FirstOrDefault(p => p.Id == productId),
+                SelectedCategories = selectedCategories,
+                Categories = categories,
+                VATRates = vatRates
+            };
+
+            return viewModel;
+        }
     }
 }
-/*
- Seznam produktů udělat jako výpis všech produktů včetně stránkování, manažer a účetní tam bude mít navíc edit u každého produktu, účetní ještě přidat, prodavač ne,
-navíc by bylo dobré implementovat vyhledávací pole s radio buttonem pro eanCode/sellerCode/název?
- */
 

@@ -13,16 +13,61 @@
 {
     <a class="btn btn-primary mb-4" asp-action="Create">Přidat produkt</a>
 }
+
 <form method="get" action="@Url.Action("Index")" class="row">
-    <div class="col-sm-4 mb-3">
-        <label for="eanCode" class="form-label">Kód EAN:</label>
-        <input type="text" name="eanCode" id="eanCode" class="form-control">
+    <div class="col-sm-6 col-md-3 mb-3">
+        <label class="form-label" asp-for="EanCodeSearch">Kód EAN:</label>
+        <input class="form-control" asp-for="EanCodeSearch">
+        <span asp-validation-for="EanCodeSearch" class="text-danger"></span>
     </div>
-    <div class="col-sm-4 mb-3">
-        <label for="sellerCode" class="form-label">Kód prodejce:</label>
-        <input type="text" name="sellerCode" id="sellerCode" class="form-control">
+    <div class="col-sm-6 col-md-3 mb-3">
+        <label class="form-label" asp-for="SellerCodeSearch">Kód prodejce:</label>
+        <input class="form-control" asp-for="SellerCodeSearch">
+        <span asp-validation-for="SellerCodeSearch" class="text-danger"></span>
     </div>
-    <div class="col-sm-4 mb-3 d-flex align-items-end justify-content-start">
+    <div class="col-sm-4 col-md-2 mb-3">
+        <label class="form-label" asp-for="VATRateIdSearch">DPH:</label>
+        <select class="form-select" asp-for="VATRateIdSearch">
+            <option value="" selected>Nevybráno</option>
+            @if (Model.VATRates != null)
+            {
+                @foreach (var rate in Model.VATRates)
+                {
+                    if (Model.VATRateIdSearch != null && rate.Id == Model.VATRateIdSearch)
+                    {
+                        <option value="@rate.Id" selected>@rate.Rate</option>
+                    }
+                    else
+                    {
+                        <option value="@rate.Id">@rate.Rate</option>
+                    }
+                }
+            }
+        </select>
+        <span asp-validation-for="VATRateIdSearch" class="text-danger"></span>
+    </div>
+    <div class="col-sm-4 col-md-2 mb-3">
+        <label class="form-label" asp-for="CategoryIdSearch">Kategorie:</label>
+        <select class="form-select" asp-for="CategoryIdSearch">
+            <option value="" selected>Nevybráno</option>
+            @if (Model.Categories != null)
+            {
+                @foreach (var category in Model.Categories)
+                {
+                    if (Model.CategoryIdSearch != null && category.Id == Model.CategoryIdSearch)
+                    {
+                        <option value="@category.Id" selected>@category.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                }
+            }
+        </select>
+        <span asp-validation-for="CategoryIdSearch" class="text-danger"></span>
+    </div>
+    <div class="col-sm-4 col-md-2 mb-3 d-flex align-items-end justify-content-start">
         <button type="submit" class="btn btn-primary">Vyhledat</button>
     </div>
 </form>
@@ -75,7 +120,9 @@
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(Model.CurrentPage == i ? "active" : string.Empty)">
-                            <a class="page-link" href="?page=@i">@i</a>
+                            <!--<a class="page-link" href="?page=@i">@i</a>-->
+                            <!--<a class="page-link" asp-action="Index" asp-route-CurrentPage="@i">@i</a>-->
+                            <a class="page-link" asp-action="Index" asp-route-EanCodeSearch="@Model.EanCodeSearch" asp-route-SellerCodeSearch="@Model.SellerCodeSearch" asp-route-CategoryIdSearch="@Model.CategoryIdSearch" asp-route-VatrateIdSearch="@Model.VATRateIdSearch" asp-route-CurrentPage="@i">@i</a>
                         </li>
                     }
                 </ul>

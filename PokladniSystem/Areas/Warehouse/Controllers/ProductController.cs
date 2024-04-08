@@ -25,14 +25,15 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
             _productViewModelValidator = productViewModelValidator;
         }
 
-        public async Task<IActionResult> Index(int page = 1, string eanCode = null, string sellerCode = null)
+        public async Task<IActionResult> Index(ProductListViewModel viewModel)
         {
-            ProductListViewModel viewModel = await _productService.GetProductListViewModelAsync(page, 10, eanCode, sellerCode);
-            
+            viewModel = await _productService.GetProductListViewModelAsync(viewModel);
+
             return View(viewModel);
         }
 
         [HttpGet]
+        [Authorize(Roles = nameof(Roles.WarehouseAccountant))]
         public async Task<IActionResult> Create()
         {
             ProductViewModel viewModel = await _productService.GetProductViewModelAsync(null);
@@ -40,13 +41,11 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ProductViewModel viewModel) 
+        [Authorize(Roles = nameof(Roles.WarehouseAccountant))]
+        public async Task<IActionResult> Create(ProductViewModel viewModel)
         {
             viewModel = await _productService.GetProductViewModelAsync(viewModel);
             ValidationResult result = _productViewModelValidator.Validate(viewModel);
-            viewModel.Product.PriceVAT = Math.Round(viewModel.Product.PriceVATFree * (1 + viewModel.VATRates.FirstOrDefault(r => r.Id == viewModel.Product.VATRateId).Rate/100.0),2);
-            viewModel.Product.PriceVATFree = Math.Round(viewModel.Product.PriceVATFree, 2);
-            viewModel.Product.PriceSale = Math.Round(viewModel.Product.PriceSale, 2);
 
             ModelState.Clear();
             if (!result.IsValid)
@@ -55,34 +54,50 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
                 return View(viewModel);
             }
 
+            viewModel.Product.PriceVAT = Math.Round(viewModel.Product.PriceVATFree * (1 + viewModel.VATRates.FirstOrDefault(r => r.Id == viewModel.Product.VATRateId).Rate / 100.0), 2);
+            viewModel.Product.PriceVATFree = Math.Round(viewModel.Product.PriceVATFree, 2);
+            viewModel.Product.PriceSale = Math.Round(viewModel.Product.PriceSale, 2);
+
             _productService.Create(viewModel);
             return RedirectToAction(nameof(ProductController.Index));
 
         }
 
-        /*[HttpGet]
-        public IActionResult Edit(int id)
+        [HttpGet]
+        [Authorize(Roles = nameof(Roles.WarehouseAccountant) + ", " + nameof(Roles.Manager))]
+        public async Task<IActionResult> Edit(int id)
         {
-            Category category = _categoryService.GetCategories().Where(c => c.Id == id).FirstOrDefault();
-            return View(category);
+            ProductViewModel viewModel = await _productService.GetProductViewModelAsync(id);
+            return View(viewModel);
         }
 
         [HttpPost]
-        public IActionResult Edit(Category category)
+        [Authorize(Roles = nameof(Roles.WarehouseAccountant) + ", " + nameof(Roles.Manager))]
+        public async Task<IActionResult> Edit(ProductViewModel viewModel)
         {
-            ValidationResult result = _categoryValidator.Validate(category);
-
+            viewModel = await _productService.GetProductViewModelAsync(viewModel);
+            ValidationResult result = _productViewModelValidator.Validate(viewModel);
 
             ModelState.Clear();
             if (!result.IsValid)
             {
                 result.AddToModelState(this.ModelState);
-                return View(category);
+                return View(viewModel);
             }
 
-            _categoryService.Edit(category);
-            return RedirectToAction(nameof(CategoryController.Index));
+            viewModel.Product.PriceSale = Math.Round(viewModel.Product.PriceSale, 2);
+
+            if (User.IsInRole(nameof(Roles.WarehouseAccountant)))
+            {
+                viewModel.Product.PriceVAT = Math.Round(viewModel.Product.PriceVATFree * (1 + viewModel.VATRates.FirstOrDefault(r => r.Id == viewModel.Product.VATRateId).Rate / 100.0), 2);
+                viewModel.Product.PriceVATFree = Math.Round(viewModel.Product.PriceVATFree, 2);
+                _productService.Edit(viewModel);
+            }
+            else
+            {
+                _productService.EditPriceSale(viewModel);
+            }
+            return RedirectToAction(nameof(ProductController.Index));
         }
-        */
     }
 }

@@ -13,7 +13,6 @@ namespace PokladniSystem.Application.ViewModels
 {
     public class ProductViewModel
     {
-
         public Product? Product { get; set; }
         public Dictionary<int, bool>? SelectedCategories { get; set; }
         
