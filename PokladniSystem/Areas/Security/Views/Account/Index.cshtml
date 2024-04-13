@@ -8,7 +8,7 @@
     <h1>@ViewData["Title"]</h1>
 </div>
 
-<a class="btn btn-primary mb-4" asp-action="Register">Nový účet</a>
+<a class="btn btn-primary mb-4" asp-action="Register"><i class="bi bi-plus-circle me-1"></i>Nový účet</a>
 @{
     if (Model != null && Model.Count > 0)
     {
@@ -32,7 +32,7 @@
                             <td>@Model[i].RoleName</td>
                             <td>@Model[i].StoreName</td>
                             <td>@Model[i].Active</td>
-                            <td><a class="btn btn-warning" asp-action="AdminEdit" asp-route-id="@Model[i].Username">Upravit</a></td>
+                            <td><a class="btn btn-warning d-inline-flex" asp-action="AdminEdit" asp-route-id="@Model[i].Username"><i class="bi bi-pencil me-1"></i>Upravit</a></td>
                         </tr>
                     }
                 </tbody>

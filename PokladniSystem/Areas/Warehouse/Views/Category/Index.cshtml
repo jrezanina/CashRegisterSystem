@@ -8,7 +8,7 @@
     <h1>@ViewData["Title"]</h1>
 </div>
 
-<a class="btn btn-primary mb-4" asp-action="Create">Přidat kategorii</a>
+<a class="btn btn-primary mb-4" asp-action="Create"><i class="bi bi-plus-circle me-1">Přidat kategorii</a>
 @{
     if (Model != null && Model.Count > 0)
     {
@@ -29,8 +29,8 @@
                         <tr>
                             <th scope="row">@Model[i].Id</th>
                             <td>@Model[i].Name</td>
-                            <td><a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model[i].Id">Upravit</a></td>
-                            <td><a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model[i].Id" onclick="return ConfirmDelete();">Odstranit</a></td>
+                            <td><a class="btn btn-warning d-inline-flex" asp-action="Edit" asp-route-id="@Model[i].Id"><i class="bi bi-pencil me-1"></i>Upravit</a></td>
+                            <td><a class="btn btn-danger d-inline-flex" asp-action="Delete" asp-route-id="@Model[i].Id" onclick="return ConfirmDelete();"><i class="bi bi-x-circle me-1"></i>Odstranit</a></td>
                         </tr>
                     }
                 </tbody>

@@ -35,7 +35,7 @@ namespace PokladniSystem.Application.Implementation
             _dbContext = dbContext;
             _rootPath = rootPath;
             _companyVM = companyService.GetCompanyViewModel();
-            _storeVM = storeService.GetStoreViewModels()[0];
+            //_storeVM = storeService.GetStoreViewModels()[0];
 
         }
         public byte[] GeneratePDF(int rowCount)

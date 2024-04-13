@@ -11,7 +11,7 @@
 
 @if (User.IsInRole(nameof(Roles.WarehouseAccountant)))
 {
-    <a class="btn btn-primary mb-4" asp-action="Create">Přidat produkt</a>
+    <a class="btn btn-primary mb-4" asp-action="Create"><i class="bi bi-plus-circle me-1"></i>Přidat produkt</a>
 }
 
 <form method="get" action="@Url.Action("Index")" class="row">
@@ -68,7 +68,7 @@
         <span asp-validation-for="CategoryIdSearch" class="text-danger"></span>
     </div>
     <div class="col-sm-4 col-md-2 mb-3 d-flex align-items-end justify-content-start">
-        <button type="submit" class="btn btn-primary">Vyhledat</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Vyhledat</button>
     </div>
 </form>
 @{
@@ -106,7 +106,7 @@
                             <td>@Model.Products[i].PriceSale</td>
                             @if (User.IsInRole(nameof(Roles.WarehouseAccountant)) || User.IsInRole(nameof(Roles.Manager)))
                             {
-                                <td><a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Products[i].Id">Upravit</a></td>
+                                <td><a class="btn btn-warning d-inline-flex" asp-action="Edit" asp-route-id="@Model.Products[i].Id"><i class="bi bi-pencil me-1"></i>Upravit</a></td>
                             }
                         </tr>
                     }
