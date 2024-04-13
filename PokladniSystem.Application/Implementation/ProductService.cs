@@ -21,14 +21,6 @@ namespace PokladniSystem.Application.Implementation
             _dbContext = dbContext;
         }
 
-        /*public async Task<IList<Product>> GetProductsAsync(int pageNumber, int pageSize)
-        {
-
-            int skipItemsCount = (pageNumber - 1) * pageSize;
-
-            return await _dbContext.Products.OrderBy(p => p.Id).Skip(skipItemsCount).Take(pageSize).ToListAsync();
-        }*/
-
         public async Task<(IList<Product> products, int productCount)> GetProductsAsync(string? eanCode, string? sellerCode, int? categoryId, int? vatRateId, int pageNumber, int pageSize)
         {
             IQueryable<Product> productsQuery = _dbContext.Products;
@@ -130,6 +122,17 @@ namespace PokladniSystem.Application.Implementation
             if (productItem != null)
             {
                 productItem.PriceSale = vm.Product.PriceSale;
+                _dbContext.SaveChanges();
+            }
+        }
+
+        public void UpdatePriceVAT(Product product)
+        {
+            Product? productItem = _dbContext.Products.FirstOrDefault(p => p.Id == product.Id);
+
+            if (productItem != null)
+            {
+                productItem.PriceVAT = Math.Round(productItem.PriceVATFree * (1 + _dbContext.VATRates.FirstOrDefault(r => r.Id == productItem.VATRateId).Rate / 100.0), 2);
                 _dbContext.SaveChanges();
             }
         }

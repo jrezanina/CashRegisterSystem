@@ -21,6 +21,7 @@ builder.Services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>(
 builder.Services.AddScoped<IValidator<AccountAdminEditViewModel>, AccountAdminEditViewModelValidator>();
 builder.Services.AddScoped<IValidator<AccountUserEditViewModel>, AccountUserEditViewModelValidator>();
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
+builder.Services.AddScoped<IValidator<VATRate>, VATRateValidator>();
 builder.Services.AddScoped<IValidator<StoreViewModel>, StoreViewModelValidator>();
 builder.Services.AddScoped<IValidator<CompanyViewModel>, CompanyViewModelValidator>();
 builder.Services.AddScoped<IValidator<ProductViewModel>, ProductViewModelValidator>();
@@ -64,6 +65,7 @@ builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IVATService, VATService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider =>
 {
     var webRootPath = serviceProvider.GetService<IWebHostEnvironment>().WebRootPath;

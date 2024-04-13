@@ -1,15 +1,20 @@
-﻿@model IList<Category>
+﻿@model IList<VATRate>
 
 @{
-    ViewData["Title"] = "Správa kategorií";
+    ViewData["Title"] = "Správa sazeb DPH";
 }
 
 <div class="text-center mb-4">
     <h1>@ViewData["Title"]</h1>
 </div>
 
-<a class="btn btn-primary mb-4" asp-action="Create"><i class="bi bi-plus-circle me-1"></i>Přidat kategorii</a>
+<a class="btn btn-primary mb-4" asp-action="Create"><i class="bi bi-plus-circle me-1"></i>Přidat sazbu</a>
+
 @{
+    if (ViewBag.DeleteError == true)
+    {
+        <div class="text-danger text-center">Odstranění se nezdařilo!</div>
+    }
     if (Model != null && Model.Count > 0)
     {
         <div class="table-responsive">
@@ -17,7 +22,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Id</th>
-                        <th scope="col">Název</th>
+                        <th scope="col">Sazba</th>
                         <th scope="col"></th>
                         <th scope="col"></th>
                     </tr>
@@ -28,7 +33,7 @@
                     {
                         <tr>
                             <th scope="row">@Model[i].Id</th>
-                            <td>@Model[i].Name</td>
+                            <td>@Model[i].Rate</td>
                             <td><a class="btn btn-warning d-inline-flex" asp-action="Edit" asp-route-id="@Model[i].Id"><i class="bi bi-pencil me-1"></i>Upravit</a></td>
                             <td><a class="btn btn-danger d-inline-flex" asp-action="Delete" asp-route-id="@Model[i].Id" onclick="return ConfirmDelete();"><i class="bi bi-x-circle me-1"></i>Odstranit</a></td>
                         </tr>
@@ -39,7 +44,7 @@
     }
     else
     {
-        <p class="lead text-dark mb-4">Nebyly nalezeny žádné kategorie</p>
+        <p class="lead text-dark mb-4">Nebyly nalezeny žádné sazby DPH</p>
     }
 }
 

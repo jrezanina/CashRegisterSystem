@@ -18,5 +18,6 @@ namespace PokladniSystem.Application.Abstraction
         void Create(ProductViewModel vm);
         void Edit(ProductViewModel vm);
         void EditPriceSale(ProductViewModel vm);
+        void UpdatePriceVAT(Product product);
     }
 }
