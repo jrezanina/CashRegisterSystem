@@ -139,7 +139,7 @@ namespace PokladniSystem.Application.Implementation
             {
                 return user.Active;
             }
-            return false;
+            return true;
         }
 
         public async Task<bool> PasswordValidAsync(string username, string password)
