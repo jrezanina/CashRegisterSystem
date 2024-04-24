@@ -1,9 +1,11 @@
 ﻿using iText.Commons.Actions.Contexts;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PokladniSystem.Application.Abstraction;
 using PokladniSystem.Application.ViewModels;
 using PokladniSystem.Domain.Entities;
 using PokladniSystem.Infrastructure.Database;
+using PokladniSystem.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +18,14 @@ namespace PokladniSystem.Application.Implementation
     public class ProductService : IProductService
     {
         CRSDbContext _dbContext;
-        public ProductService(CRSDbContext dbContext)
+        IAccountService _accountService;
+        public ProductService(CRSDbContext dbContext, IAccountService accountService)
         {
             _dbContext = dbContext;
+            _accountService = accountService;
         }
 
-        public async Task<(IList<Product> products, int productCount)> GetProductsAsync(string? eanCode, string? sellerCode, int? categoryId, int? vatRateId, int pageNumber, int pageSize)
+        private async Task<(IList<Product> products, int productCount)> GetProductsAsync(string? eanCode, string? sellerCode, int? categoryId, int? vatRateId, int pageNumber, int pageSize)
         {
             IQueryable<Product> productsQuery = _dbContext.Products;
 
@@ -162,7 +166,29 @@ namespace PokladniSystem.Application.Implementation
 
         public async Task<ProductListViewModel> GetProductListViewModelAsync(ProductListViewModel vm)
         {
+            Dictionary<int, int> productQuantities = new Dictionary<int, int>();
+
             var (filteredProducts, productCount) = await GetProductsAsync(vm.EanCodeSearch, vm.SellerCodeSearch, vm.CategoryIdSearch, vm.VATRateIdSearch, vm.CurrentPage, vm.PageSize);
+            var filteredProductIds = filteredProducts.Select(p => p.Id).ToList();
+
+            Dictionary<int, int> filteredProductQuantities;
+
+            if (vm.StoreIdSearch != null)
+            {
+                filteredProductQuantities = _dbContext.Supplies.Where(s => filteredProductIds.Contains(s.ProductId) && s.StoreId == vm.StoreIdSearch).ToDictionary(s => s.ProductId, s => s.Quantity);
+            }
+            else
+            {
+                filteredProductQuantities = _dbContext.Supplies.Where(s => filteredProductIds.Contains(s.ProductId)).GroupBy(s => s.ProductId).ToDictionary(g => g.Key, g => g.Sum(s => s.Quantity));
+            }
+
+            foreach (var product in filteredProducts)
+            {
+                productQuantities.Add(product.Id, filteredProductQuantities.ContainsKey(product.Id) ? filteredProductQuantities[product.Id] : 0);
+            }
+
+            vm.ProductQuantities = productQuantities;
+            vm.Stores = await _dbContext.Stores.ToListAsync();
             vm.Categories = await _dbContext.Categories.ToListAsync();
             vm.VATRates = await _dbContext.VATRates.ToListAsync();
             vm.Products = filteredProducts;
@@ -209,6 +235,71 @@ namespace PokladniSystem.Application.Implementation
             };
 
             return viewModel;
+        }
+
+        public async Task<SupplyViewModel> GetSupplyViewModelAsync(SupplyViewModel vm)
+        {
+            IList<Store> stores = await _dbContext.Stores.ToListAsync();
+            Product product = _dbContext.Products.FirstOrDefault(p => p.Id == vm.Supply.ProductId);
+
+            SupplyViewModel viewModel = new SupplyViewModel()
+            {
+                Supply = vm.Supply,
+                Stores = stores,
+                Product = product
+            };
+
+            return viewModel;
+        }
+
+        public async Task<SupplyViewModel> GetSupplyViewModelAsync(int productId)
+        {
+            IList<Store> stores = await _dbContext.Stores.ToListAsync();
+            Product product = _dbContext.Products.FirstOrDefault(p => p.Id == productId);
+
+            SupplyViewModel viewModel = new SupplyViewModel()
+            {
+                Supply = new Supply()
+                {
+                    Quantity = 0,
+                    ProductId = productId,
+                    StoreId = null
+                },
+                Stores = stores,
+                Product = product
+            };
+
+            return viewModel;
+        }
+
+        public bool StockUp(SupplyViewModel vm)
+        {
+            Supply supplyItem = _dbContext.Supplies.Where(s => s.ProductId == vm.Supply.ProductId && s.StoreId == vm.Supply.StoreId).FirstOrDefault();
+
+            if (supplyItem != null)
+            {
+                int totalQuantity = supplyItem.Quantity + vm.Supply.Quantity;
+
+                if (totalQuantity >= 0)
+                {
+                    supplyItem.Quantity += vm.Supply.Quantity;
+                    _dbContext.SaveChanges();
+
+                    return true;
+                }
+            }
+            else
+            {
+                if (vm.Supply.Quantity >= 0)
+                {
+                    _dbContext.Supplies.Add(vm.Supply);
+                    _dbContext.SaveChanges();
+
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -1,0 +1,50 @@
+﻿@model SupplyViewModel
+
+@{
+    ViewData["Title"] = "Naskladnění zboží \"" + Model.Product.Name + "\"";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<form asp-action="Stockup" method="post" enctype="multipart/form-data">
+    <div class="mb-3" style="display:none;">
+        <input class="form-control" asp-for="Supply.ProductId" value="@Model.Supply.ProductId">
+    </div>
+    <div class="row">
+        <div class="col-md">
+            <div class="mb-3">
+                <label class="form-label" asp-for="Supply.StoreId">Prodejna:</label>
+                <select class="form-select" asp-for="Supply.StoreId">
+                    @if (Model.Stores != null)
+                    {
+                        @foreach (var store in Model.Stores)
+                        {
+                            if (Model.Supply.StoreId != null && store.Id == Model.Supply.StoreId)
+                            {
+                                <option value="@store.Id" selected>@store.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@store.Id">@store.Name</option>
+                            }
+                        }
+                    }
+                </select>
+                <span asp-validation-for="Supply.StoreId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="mb-3">
+                <label class="form-label" asp-for="Supply.Quantity">Množství:</label>
+                <input class="form-control" asp-for="Supply.Quantity">
+                <span asp-validation-for="Supply.Quantity" class="text-danger"></span>
+                <div class="text-danger">@Html.ValidationMessage("NegativeStockError")</div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary text-center">Naskladnit</button>
+    </div>
+</form>

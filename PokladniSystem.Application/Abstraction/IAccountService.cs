@@ -1,5 +1,6 @@
 ﻿using PokladniSystem.Application.ViewModels;
 using PokladniSystem.Domain.Entities;
+using PokladniSystem.Infrastructure.Identity;
 using PokladniSystem.Infrastructure.Identity.Enums;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace PokladniSystem.Application.Abstraction
         Task<string[]> RegisterAsync(RegisterViewModel vm);
         Task<bool> LoginAsync(LoginViewModel vm);
         Task Logout();
+        Task<User> GetUserAsync(string username);
         Task<bool> PasswordValidAsync(string username, string password);
         Task<bool> AccountActiveAsync(string username);
         Task<bool> AdminEditAsync(AccountAdminEditViewModel vm);

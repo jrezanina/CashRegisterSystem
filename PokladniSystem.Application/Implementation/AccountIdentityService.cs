@@ -46,6 +46,13 @@ namespace PokladniSystem.Application.Implementation
             return viewModel;
         }
 
+        public async Task<User> GetUserAsync(string username)
+        {
+            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+
+            return user;
+        }
+
         public async Task<IList<AccountViewModel>> GetAccountViewModelsAsync()
         {
             IList<AccountViewModel> viewModels = new List<AccountViewModel>();
@@ -72,7 +79,7 @@ namespace PokladniSystem.Application.Implementation
         {
             AccountAdminEditViewModel viewModel = new AccountAdminEditViewModel();
 
-            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            User user = await GetUserAsync(username);
 
             viewModel.Username = username;
             viewModel.Password = string.Empty;
@@ -86,7 +93,7 @@ namespace PokladniSystem.Application.Implementation
         {
             AccountUserEditViewModel viewModel = new AccountUserEditViewModel();
 
-            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            User user = await GetUserAsync(username);
 
             viewModel.Username = user.UserName;
 
@@ -97,7 +104,7 @@ namespace PokladniSystem.Application.Implementation
         public async Task<bool> AdminEditAsync(AccountAdminEditViewModel vm)
         {
             bool resultPassword = true;
-            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == vm.Username);
+            User user = await GetUserAsync(vm.Username);
 
             if (user != null)
             {
@@ -117,7 +124,7 @@ namespace PokladniSystem.Application.Implementation
 
         public async Task<bool> UserEditAsync(AccountUserEditViewModel vm)
         {
-            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == vm.Username);
+            User user = await GetUserAsync(vm.Username);
 
             if (user != null)
             {
@@ -133,7 +140,7 @@ namespace PokladniSystem.Application.Implementation
 
         public async Task<bool> AccountActiveAsync(string username)
         {
-            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            User user = await GetUserAsync(username);
 
             if (user != null)
             {
@@ -144,7 +151,7 @@ namespace PokladniSystem.Application.Implementation
 
         public async Task<bool> PasswordValidAsync(string username, string password)
         {
-            User user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            User user = await GetUserAsync(username);
 
             if (user != null && password != null)
             {

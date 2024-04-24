@@ -25,6 +25,7 @@ builder.Services.AddScoped<IValidator<VATRate>, VATRateValidator>();
 builder.Services.AddScoped<IValidator<StoreViewModel>, StoreViewModelValidator>();
 builder.Services.AddScoped<IValidator<CompanyViewModel>, CompanyViewModelValidator>();
 builder.Services.AddScoped<IValidator<ProductViewModel>, ProductViewModelValidator>();
+builder.Services.AddScoped<IValidator<SupplyViewModel>, SupplyViewModelValidator>();
 
 string connectionString = builder.Configuration.GetConnectionString("MySQL");
 ServerVersion serverVersion = new MySqlServerVersion("8.0.34");

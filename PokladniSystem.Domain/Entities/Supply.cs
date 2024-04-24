@@ -9,11 +9,11 @@ namespace PokladniSystem.Domain.Entities
 {
     public class Supply : Entity<int>
     {
-        public int Amount { get; set; }
+        public int Quantity { get; set; }
         [ForeignKey(nameof(Product))]
         public int ProductId { get; set; }
         [ForeignKey(nameof(Store))]
-        public int StoreId{ get; set; }
+        public int? StoreId{ get; set; }
 
         public Product? Product { get; set; }
         public Store? Store { get; set; }

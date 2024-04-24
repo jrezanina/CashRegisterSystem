@@ -10,15 +10,18 @@ namespace PokladniSystem.Application.ViewModels
     public class ProductListViewModel
     {
         public IList<Product> Products { get; set; }
+        public Dictionary<int, int> ProductQuantities { get; set; }
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
         public string? EanCodeSearch { get; set; }
         public string? SellerCodeSearch { get; set; }
         public int? CategoryIdSearch { get; set; }
+        public int? StoreIdSearch { get; set; }
         public int? VATRateIdSearch { get; set; }
         public int PageSize = 10;
 
         public IList<Category> Categories { get; set; }
         public IList<VATRate> VATRates { get; set; }
+        public IList<Store> Stores { get; set; }
     }
 }

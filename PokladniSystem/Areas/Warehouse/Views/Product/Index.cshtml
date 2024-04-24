@@ -14,18 +14,18 @@
     <a class="btn btn-primary mb-4" asp-action="Create"><i class="bi bi-plus-circle me-1"></i>Přidat produkt</a>
 }
 
-<form method="get" action="@Url.Action("Index")" class="row">
-    <div class="col-sm-6 col-md-3 mb-3">
+<form method="get" action="@Url.Action("Index")" id="columnsContainer" class="row">
+    <div class="col-sm-6 col-md-6 col-lg mb-3">
         <label class="form-label" asp-for="EanCodeSearch">Kód EAN:</label>
         <input class="form-control" asp-for="EanCodeSearch">
         <span asp-validation-for="EanCodeSearch" class="text-danger"></span>
     </div>
-    <div class="col-sm-6 col-md-3 mb-3">
+    <div class="col-sm-6 col-md-6 col-lg mb-3">
         <label class="form-label" asp-for="SellerCodeSearch">Kód prodejce:</label>
         <input class="form-control" asp-for="SellerCodeSearch">
         <span asp-validation-for="SellerCodeSearch" class="text-danger"></span>
     </div>
-    <div class="col-sm-4 col-md-2 mb-3">
+    <div class="col-sm col-md col-lg mb-3">
         <label class="form-label" asp-for="VATRateIdSearch">DPH:</label>
         <select class="form-select" asp-for="VATRateIdSearch">
             <option value="" selected>Nevybráno</option>
@@ -46,7 +46,7 @@
         </select>
         <span asp-validation-for="VATRateIdSearch" class="text-danger"></span>
     </div>
-    <div class="col-sm-4 col-md-2 mb-3">
+    <div class="col-sm col-md col-lg mb-3">
         <label class="form-label" asp-for="CategoryIdSearch">Kategorie:</label>
         <select class="form-select" asp-for="CategoryIdSearch">
             <option value="" selected>Nevybráno</option>
@@ -67,7 +67,33 @@
         </select>
         <span asp-validation-for="CategoryIdSearch" class="text-danger"></span>
     </div>
-    <div class="col-sm-4 col-md-2 mb-3 d-flex align-items-end justify-content-start">
+    @{
+        if (!User.IsInRole(nameof(Roles.Cashier)))
+        {
+            <div class="col-sm col-md col-lg mb-3 column">
+                <label class="form-label" asp-for="StoreIdSearch">Prodejna:</label>
+                <select class="form-select" asp-for="StoreIdSearch">
+                    <option value="" selected>Nevybráno</option>
+                    @if (Model.Stores != null)
+                    {
+                        @foreach (var store in Model.Stores)
+                        {
+                            if (Model.StoreIdSearch != null && store.Id == Model.StoreIdSearch)
+                            {
+                                <option value="@store.Id" selected>@store.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@store.Id">@store.Name</option>
+                            }
+                        }
+                    }
+                </select>
+                <span asp-validation-for="StoreIdSearch" class="text-danger"></span>
+            </div>
+        }
+    }
+    <div class="col-sm col-md col-lg mb-3 d-flex align-items-end justify-content-start">
         <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Vyhledat</button>
     </div>
 </form>
@@ -78,7 +104,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">Id</th>
+                        <th scope="col">Skladem</th>
                         <th scope="col">Kód EAN</th>
                         <th scope="col">Kód prodejce</th>
                         <th scope="col">Název</th>
@@ -88,6 +114,7 @@
                         <th scope="col">Cena s DPH</th>
                         <th scope="col">Prodejní cena</th>
                         <th scope="col"></th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,7 +122,7 @@
                     @for (int i = 0; i < Model.Products.Count; i++)
                     {
                         <tr>
-                            <th scope="row">@Model.Products[i].Id</th>
+                            <th scope="row">@Model.ProductQuantities[Model.Products[i].Id]</th>
                             <td>@Model.Products[i].EanCode</td>
                             <td>@Model.Products[i].SellerCode</td>
                             <td>@Model.Products[i].Name</td>
@@ -107,6 +134,10 @@
                             @if (User.IsInRole(nameof(Roles.WarehouseAccountant)) || User.IsInRole(nameof(Roles.Manager)))
                             {
                                 <td><a class="btn btn-warning d-inline-flex" asp-action="Edit" asp-route-id="@Model.Products[i].Id"><i class="bi bi-pencil me-1"></i>Upravit</a></td>
+                            }
+                            @if (User.IsInRole(nameof(Roles.WarehouseAccountant)))
+                            {
+                                <td><a class="btn btn-success d-inline-flex" asp-action="Stockup" asp-route-id="@Model.Products[i].Id"><i class="bi bi-cart4 me-1"></i>Naskladnit</a></td>
                             }
                         </tr>
                     }
@@ -122,7 +153,7 @@
                         <li class="page-item @(Model.CurrentPage == i ? "active" : string.Empty)">
                             <!--<a class="page-link" href="?page=@i">@i</a>-->
                             <!--<a class="page-link" asp-action="Index" asp-route-CurrentPage="@i">@i</a>-->
-                            <a class="page-link" asp-action="Index" asp-route-EanCodeSearch="@Model.EanCodeSearch" asp-route-SellerCodeSearch="@Model.SellerCodeSearch" asp-route-CategoryIdSearch="@Model.CategoryIdSearch" asp-route-VatrateIdSearch="@Model.VATRateIdSearch" asp-route-CurrentPage="@i">@i</a>
+                            <a class="page-link" asp-action="Index" asp-route-EanCodeSearch="@Model.EanCodeSearch" asp-route-SellerCodeSearch="@Model.SellerCodeSearch" asp-route-CategoryIdSearch="@Model.CategoryIdSearch" asp-route-VatrateIdSearch="@Model.VATRateIdSearch" asp-route-StoreIdSearch="@Model.StoreIdSearch" asp-route-CurrentPage="@i">@i</a>
                         </li>
                     }
                 </ul>
@@ -133,4 +164,25 @@
     {
         <p class="lead text-dark mb-4">Nebyly nalezeny žádné produkty</p>
     }
+}
+
+@section Scripts
+{
+   <!-- <script>
+        $(document).ready(function () {
+            function updateColumnClasses() {
+                var columnCount = $("#columnsContainer").children().length;
+                if (columnCount === 6) {
+                    console.log("Ma jich byt 6 " + columnCount)
+                    $(".column").removeClass("col-md-3").addClass("col-md-4");
+                } else {
+                    console.log("Ma jich byt 5 " + columnCount)
+                    $(".column").removeClass("col-md-4").addClass("col-md-3");
+                }
+            }
+
+            updateColumnClasses();
+            $(window).resize(updateColumnClasses);
+        });
+    </script> -->
 }
