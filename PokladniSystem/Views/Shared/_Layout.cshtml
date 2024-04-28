@@ -27,6 +27,12 @@
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
+                            if (User.IsInRole(nameof(Roles.Cashier)))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="CashRegister" asp-action="Index">Prodej</a>
+                                </li>
+                            }
                             if (User.IsInRole(nameof(Roles.Admin)))
                             {
                                 <li class="nav-item">

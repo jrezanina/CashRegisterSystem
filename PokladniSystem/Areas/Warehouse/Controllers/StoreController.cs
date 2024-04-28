@@ -42,7 +42,6 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
 
             ValidationResult result = _storeViewModelValidator.Validate(viewModel);
 
-
             ModelState.Clear();
             if (!result.IsValid)
             {

@@ -1,0 +1,150 @@
+﻿@model IList<Category>
+
+@{
+    ViewData["Title"] = "Prodej zboží";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="row">
+            <div class="col-2 mb-3">
+                <label class="form-label" for="quantityInput">Množství:</label>
+                <input class="form-control" id="quantityInput" type="number" placeholder="Počet">
+            </div>
+            <div class="col-4 mb-3">
+                <label class="form-label" for="codeInput">Kód:</label>
+                <input class="form-control" type="text" id="codeInput" placeholder="Kód">
+            </div>
+            <div class="col-3 d-flex flex-column justify-content-end align-items-start mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="eanCodeRadio" name="codeType" value="eanCode">
+                    <label class="form-check-label" for="eanCodeRadio">Kód EAN</label>
+                </div>
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="radio" id="sellerCodeRadio" name="codeType" value="sellerCode">
+                    <label class="form-check-label" for="sellerCodeRadio">Kód prodejce</label>
+                </div>
+            </div>
+            <div class="col-2 d-flex align-items-end justify-content-start mb-3">
+                <button class="btn btn-primary" id="addItemButton">Přidat</button>
+            </div>
+        </div>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto">
+            <table class="table" id="orderItemTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Kód Ean</th>
+                        <th scope="col">Kód prodejce</th>
+                        <th scope="col">Název zboží</th>
+                        <th scope="col">Počet kusů</th>
+                        <th scope="col">Prodejní cena</th>
+                        <th scope="col">Celková cena</th>
+                    </tr>
+                </thead>
+                <tbody id="orderItemTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/dialogs.js"></script>
+    <script>
+        document.getElementById('addItemButton').addEventListener('click', function () {
+            const quantity = document.getElementById("quantityInput").value;
+            let eanCode;
+            let sellerCode;
+            if (document.getElementById("eanCodeRadio").checked) {
+                eanCode = document.getElementById("codeInput").value;
+            }
+            else if (document.getElementById("sellerCodeRadio").checked) {
+                sellerCode = document.getElementById("codeInput").value;
+            }
+
+            $.ajax({
+                url: '/Warehouse/CashRegister/GetOrderItem',
+                type: 'POST',
+                data: { eanCode: eanCode, sellerCode: sellerCode, quantity: quantity },
+                success: function (response) {
+                    var orderItem = {
+                        eanCode: response.product.eanCode,
+                        sellerCode: response.product.sellerCode,
+                        name: response.product.shortName,
+                        quantity: response.quantity,
+                        priceSale: response.product.priceSale
+                    }
+                    addOrderItem(orderItem)
+                    
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+        });
+
+        let orderItems = [];
+
+        function addOrderItem(orderItem) {
+            const eanCode = orderItem.eanCode || "";
+            const sellerCode = orderItem.sellerCode || "";
+            const orderItemKey = eanCode + "_" + sellerCode;
+            if (orderItemKey) {
+                const existingOrderItem = orderItems.find(p => p.key === orderItemKey);
+                if (existingOrderItem) {
+
+                    existingOrderItem.quantity = existingOrderItem.quantity + orderItem.quantity;
+                    existingOrderItem.priceTotal = existingOrderItem.priceTotal + orderItem.priceSale * orderItem.quantity;
+                } else {
+                    orderItems.push({
+                        key: orderItemKey,
+                        eanCode: eanCode,
+                        sellerCode: sellerCode,
+                        name: orderItem.name,
+                        quantity: orderItem.quantity,
+                        priceSale: orderItem.priceSale,
+                        priceTotal: orderItem.priceSale * orderItem.quantity
+                    });
+                }
+                updateTable();
+            }
+        }
+
+        function updateTable() {
+            const tableBody = document.getElementById("orderItemTableBody");
+            tableBody.innerHTML = "";
+            orderItems.forEach(orderItem => {
+                const row = document.createElement("tr");
+                const eanCodeCell = document.createElement("td");
+                const sellerCodeCell = document.createElement("td");
+                const nameCell = document.createElement("td");
+                const quantityCell = document.createElement("td");
+                const priceSaleCell = document.createElement("td");
+                const priceTotalCell = document.createElement("td");
+                eanCodeCell.textContent = orderItem.eanCode;
+                sellerCodeCell.textContent = orderItem.sellerCode;
+                nameCell.textContent = orderItem.name;
+                quantityCell.textContent = orderItem.quantity;
+                priceSaleCell.textContent = orderItem.priceSale;
+                priceTotalCell.textContent = orderItem.priceTotal;
+                row.appendChild(eanCodeCell);
+                row.appendChild(sellerCodeCell);
+                row.appendChild(nameCell);
+                row.appendChild(quantityCell);
+                row.appendChild(priceSaleCell);
+                row.appendChild(priceTotalCell);
+                tableBody.appendChild(row);
+            });
+        }
+
+        function sendData() {
+            console.log(orderItems);
+        }
+    </script>
+}

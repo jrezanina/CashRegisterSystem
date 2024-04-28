@@ -151,8 +151,6 @@
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(Model.CurrentPage == i ? "active" : string.Empty)">
-                            <!--<a class="page-link" href="?page=@i">@i</a>-->
-                            <!--<a class="page-link" asp-action="Index" asp-route-CurrentPage="@i">@i</a>-->
                             <a class="page-link" asp-action="Index" asp-route-EanCodeSearch="@Model.EanCodeSearch" asp-route-SellerCodeSearch="@Model.SellerCodeSearch" asp-route-CategoryIdSearch="@Model.CategoryIdSearch" asp-route-VatrateIdSearch="@Model.VATRateIdSearch" asp-route-StoreIdSearch="@Model.StoreIdSearch" asp-route-CurrentPage="@i">@i</a>
                         </li>
                     }
@@ -168,21 +166,5 @@
 
 @section Scripts
 {
-   <!-- <script>
-        $(document).ready(function () {
-            function updateColumnClasses() {
-                var columnCount = $("#columnsContainer").children().length;
-                if (columnCount === 6) {
-                    console.log("Ma jich byt 6 " + columnCount)
-                    $(".column").removeClass("col-md-3").addClass("col-md-4");
-                } else {
-                    console.log("Ma jich byt 5 " + columnCount)
-                    $(".column").removeClass("col-md-4").addClass("col-md-3");
-                }
-            }
 
-            updateColumnClasses();
-            $(window).resize(updateColumnClasses);
-        });
-    </script> -->
 }

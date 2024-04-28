@@ -67,6 +67,7 @@ builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IVATService, VATService>();
+builder.Services.AddScoped<ISaleService, SaleService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider =>
 {
     var webRootPath = serviceProvider.GetService<IWebHostEnvironment>().WebRootPath;
