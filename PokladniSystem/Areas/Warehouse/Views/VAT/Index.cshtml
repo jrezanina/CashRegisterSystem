@@ -35,7 +35,7 @@
                             <th scope="row">@Model[i].Id</th>
                             <td>@Model[i].Rate</td>
                             <td><a class="btn btn-warning d-inline-flex" asp-action="Edit" asp-route-id="@Model[i].Id"><i class="bi bi-pencil me-1"></i>Upravit</a></td>
-                            <td><a class="btn btn-danger d-inline-flex" asp-action="Delete" asp-route-id="@Model[i].Id" onclick="return ConfirmDelete();"><i class="bi bi-x-circle me-1"></i>Odstranit</a></td>
+                            <td><a class="btn btn-danger d-inline-flex" asp-action="Delete" asp-route-id="@Model[i].Id" onclick="return ConfirmDelete();"><i class="bi bi-trash3 me-1"></i>Odstranit</a></td>
                         </tr>
                     }
                 </tbody>

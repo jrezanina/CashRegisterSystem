@@ -40,5 +40,17 @@ namespace PokladniSystem.Application.Implementation
 
             return null;
         }
+
+        public bool IsInStock(int productId, int? storeId, int quantity)
+        {
+            Supply supply = _dbContext.Supplies.FirstOrDefault(s => s.ProductId == productId && s.StoreId == storeId);
+
+            if (supply != null)
+            {
+                return supply.Quantity >= quantity;
+            }
+
+            return false;
+        }
     }
 }

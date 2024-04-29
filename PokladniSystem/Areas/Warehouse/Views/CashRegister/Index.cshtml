@@ -1,26 +1,24 @@
-﻿@model IList<Category>
-
-@{
+﻿@{
     ViewData["Title"] = "Prodej zboží";
 }
 
 <div class="text-center mb-4">
     <h1>@ViewData["Title"]</h1>
 </div>
-<div class="row">
+<div class="row mb-3">
     <div class="col-lg-8">
         <div class="row">
-            <div class="col-2 mb-3">
+            <div class="col-3 mb-3">
                 <label class="form-label" for="quantityInput">Množství:</label>
-                <input class="form-control" id="quantityInput" type="number" placeholder="Počet">
+                <input class="form-control" id="quantityInput" type="number" onclick="setActiveInput('quantityInput')" placeholder="Počet" value="1">
             </div>
-            <div class="col-4 mb-3">
+            <div class="col-3 mb-3">
                 <label class="form-label" for="codeInput">Kód:</label>
-                <input class="form-control" type="text" id="codeInput" placeholder="Kód">
+                <input class="form-control" type="text" id="codeInput" onclick="setActiveInput('codeInput')" placeholder="Kód">
             </div>
-            <div class="col-3 d-flex flex-column justify-content-end align-items-start mb-3">
+            <div class="col-4 d-flex flex-column justify-content-end align-items-start mb-3">
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" id="eanCodeRadio" name="codeType" value="eanCode">
+                    <input class="form-check-input" type="radio" id="eanCodeRadio" name="codeType" value="eanCode" checked>
                     <label class="form-check-label" for="eanCodeRadio">Kód EAN</label>
                 </div>
                 <div class="form-check mb-0">
@@ -28,11 +26,11 @@
                     <label class="form-check-label" for="sellerCodeRadio">Kód prodejce</label>
                 </div>
             </div>
-            <div class="col-2 d-flex align-items-end justify-content-start mb-3">
-                <button class="btn btn-primary" id="addItemButton">Přidat</button>
+            <div class="col-2 d-flex align-items-end justify-content-end mb-3">
+                <button class="btn btn-primary d-inline-flex" id="addItemButton"><i class="bi bi-plus-circle me-1"></i>Přidat</button>
             </div>
         </div>
-        <div class="table-responsive" style="max-height: 400px; overflow-y: auto">
+        <div class="table-responsive mb-3" style="max-height: 350px; overflow-y: auto">
             <table class="table" id="orderItemTable">
                 <thead>
                     <tr>
@@ -42,22 +40,75 @@
                         <th scope="col">Počet kusů</th>
                         <th scope="col">Prodejní cena</th>
                         <th scope="col">Celková cena</th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody id="orderItemTableBody">
                 </tbody>
             </table>
         </div>
+        <div class="row justify-content-end mb-3">
+            <div class="col col-sm-6 d-flex justify-content-sm-end align-items-end">
+                <p class="text-dark mb-0">Celková částka: <span id="totalPrice" class="text-dark fw-bold">0</span> Kč</p>
+            </div>
+            <div class="col col-sm-3 d-flex justify-content-end">
+                <button class="btn btn-success d-inline-flex" id="addItemButton"><i class="bi bi-cart4 me-1"></i>Dokončit</button>
+            </div>
+        </div>
     </div>
     <div class="col-lg-4">
+        <div class="container d-flex justify-content-center">
+            <div class="grid">
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(1)">1</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(2)">2</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(3)">3</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(4)">4</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(5)">5</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(6)">6</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(7)">7</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(8)">8</button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(9)">9</button>
+                <button class="btn btn-danger btn-lg square-btn" onclick="deleteLastCharacter()"><i class="bi bi-backspace"></i></button>
+                <button class="btn btn-primary btn-lg square-btn" onclick="insertNumber(0)">0</button>
+                <button class="btn btn-danger btn-lg square-btn" onclick="clearInput()"><i class="bi bi-x"></i></button>
+            </div>
+        </div>
     </div>
 </div>
-
 @section Scripts
 {
     <script src="~/js/dialogs.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var savedOrderItems = localStorage.getItem('orderItems');
+            if (savedOrderItems) {
+                orderItems = JSON.parse(savedOrderItems);
+                updateTable();
+            }
+        });
+
         document.getElementById('addItemButton').addEventListener('click', function () {
+            getOrderItem();
+        });
+
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('remove-btn') || event.target.closest('.remove-btn')) {
+                var key = event.target.closest('.remove-btn').getAttribute('data-key');
+                removeOrderItem(key);
+            }
+        });
+
+        document.getElementById("codeInput").addEventListener("input", function (event) {
+            let inputValue = this.value;
+
+            if (document.getElementById("eanCodeRadio").checked && /\D/.test(inputValue)) {
+                inputValue = inputValue.replace(/\D/g, '');
+                this.value = inputValue;
+                getOrderItem();
+            }
+        });
+
+        function getOrderItem() {
             const quantity = document.getElementById("quantityInput").value;
             let eanCode;
             let sellerCode;
@@ -67,7 +118,6 @@
             else if (document.getElementById("sellerCodeRadio").checked) {
                 sellerCode = document.getElementById("codeInput").value;
             }
-
             $.ajax({
                 url: '/Warehouse/CashRegister/GetOrderItem',
                 type: 'POST',
@@ -80,15 +130,23 @@
                         quantity: response.quantity,
                         priceSale: response.product.priceSale
                     }
-                    addOrderItem(orderItem)
                     
+                    addOrderItem(orderItem)
+
+                    let codeInput = document.getElementById("codeInput");
+
+                    document.getElementById("quantityInput").value = '1';
+                    codeInput.value = "";
+                    codeInput.focus();
+
                 },
                 error: function (response) {
                     alert(response.responseText);
                 }
             });
-        });
-
+        }
+    </script>
+    <script>
         let orderItems = [];
 
         function addOrderItem(orderItem) {
@@ -113,6 +171,19 @@
                     });
                 }
                 updateTable();
+                localStorage.setItem('orderItems', JSON.stringify(orderItems));
+            }
+        }
+
+        function removeOrderItem(key) {
+            var index = orderItems.findIndex(function (item) {
+                return item.key === key;
+            });
+
+            if (index !== -1) {
+                orderItems.splice(index, 1);
+                updateTable();
+                localStorage.setItem('orderItems', JSON.stringify(orderItems));
             }
         }
 
@@ -126,25 +197,71 @@
                 const nameCell = document.createElement("td");
                 const quantityCell = document.createElement("td");
                 const priceSaleCell = document.createElement("td");
-                const priceTotalCell = document.createElement("td");
+                const priceTotalCell = document.createElement("th");
+                const removeItemCell = document.createElement("td");
                 eanCodeCell.textContent = orderItem.eanCode;
                 sellerCodeCell.textContent = orderItem.sellerCode;
                 nameCell.textContent = orderItem.name;
                 quantityCell.textContent = orderItem.quantity;
-                priceSaleCell.textContent = orderItem.priceSale;
-                priceTotalCell.textContent = orderItem.priceTotal;
+                priceSaleCell.textContent = orderItem.priceSale.toFixed(2);
+                priceTotalCell.textContent = orderItem.priceTotal.toFixed(2);
+                removeItemCell.innerHTML = '<a class="btn btn-danger remove-btn" data-key="' + orderItem.key + '"><i class="bi bi-trash3"></i></a>';
                 row.appendChild(eanCodeCell);
                 row.appendChild(sellerCodeCell);
                 row.appendChild(nameCell);
                 row.appendChild(quantityCell);
                 row.appendChild(priceSaleCell);
                 row.appendChild(priceTotalCell);
+                row.appendChild(removeItemCell);
                 tableBody.appendChild(row);
             });
+
+            updateTotalPrice();
+        }
+
+        function updateTotalPrice(totalPrice) {
+            var totalPrice = 0;
+            for (var i = 0; i < orderItems.length; i++) {
+                totalPrice += orderItems[i].priceTotal;
+            }
+            var totalPriceElement = document.getElementById("totalPrice");
+            totalPriceElement.textContent = totalPrice.toFixed(2);
         }
 
         function sendData() {
             console.log(orderItems);
         }
     </script>
+    <script>
+        var activeInputId = null;
+
+        function setActiveInput(inputId) {
+            activeInputId = inputId;
+        }
+
+        function insertNumber(number) {
+            var input = document.getElementById(activeInputId);
+            if (input) {
+                input.value += number;
+            }
+        }
+
+        function clearInput() {
+            var input = document.getElementById(activeInputId);
+            if (input) {
+                input.value = "";
+            }
+        }
+
+        function deleteLastCharacter() {
+            var input = document.getElementById(activeInputId);
+            if (input && input.value.length > 0) {
+                input.value = input.value.slice(0, -1);
+            }
+        }
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/keypad.css" asp-append-version="true" />
 }

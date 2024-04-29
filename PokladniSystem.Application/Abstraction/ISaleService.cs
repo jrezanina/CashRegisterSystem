@@ -11,5 +11,6 @@ namespace PokladniSystem.Application.Abstraction
     public interface ISaleService
     {
         OrderItemViewModel GetOrderItemViewModel(string eanCode, string sellerCode, int quantity);
+        bool IsInStock(int productId, int? storeId, int quantity);
     }
 }
