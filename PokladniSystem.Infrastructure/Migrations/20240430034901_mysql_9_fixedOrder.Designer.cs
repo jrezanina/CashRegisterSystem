@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokladniSystem.Infrastructure.Database;
 
@@ -10,9 +11,11 @@ using PokladniSystem.Infrastructure.Database;
 namespace PokladniSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(CRSDbContext))]
-    partial class CRSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240430034901_mysql_9_fixedOrder")]
+    partial class mysql_9_fixedOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -271,7 +274,7 @@ namespace PokladniSystem.Infrastructure.Migrations
                     b.Property<int>("StoreId")
                         .HasColumnType("int");
 
-                    b.Property<double?>("TotalPrice")
+                    b.Property<double>("TotalPrice")
                         .HasColumnType("double");
 
                     b.Property<int>("UserId")

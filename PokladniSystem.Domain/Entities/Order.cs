@@ -14,7 +14,7 @@ namespace PokladniSystem.Domain.Entities
         public int StoreId { get; set; }
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
-        public int TotalPrice { get; set; }
+        public double? TotalPrice { get; set; }
         public DateTime DateTimeCreated { get; set; }
         public string? ReceiptSrc { get; set; }
 

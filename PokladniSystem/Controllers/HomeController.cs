@@ -40,12 +40,12 @@ namespace PokladniSystem.Controllers
             return Content(contentToPrint, "text/html");
         }
 
-        public ActionResult GeneratePDF(int rowCount)
+        /*public ActionResult GeneratePDF(int rowCount)
         {
-            byte[] pdfBytes = _receiptService.GeneratePDF(rowCount);
+            byte[] pdfBytes = _receiptService.GenerateReceiptPDF(rowCount);
 
-            _receiptService.SavePDF(pdfBytes, $"order{rowCount}.pdf", "OrderReceipts");
+            _receiptService.SaveReceiptPDF(pdfBytes, $"order{rowCount}.pdf", "OrderReceipts");
             return File(pdfBytes, "application/pdf");
-        }
+        }*/
     }
 }

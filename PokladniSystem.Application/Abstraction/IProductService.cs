@@ -11,6 +11,7 @@ namespace PokladniSystem.Application.Abstraction
     public interface IProductService
     {
         Product GetProduct(string? eanCode, string? sellerCode);
+        Product GetProduct(int id);
         Task<ProductListViewModel> GetProductListViewModelAsync(ProductListViewModel vm);
         Task<ProductViewModel> GetProductViewModelAsync(int productId);
         Task<ProductViewModel> GetProductViewModelAsync(ProductViewModel? vm);

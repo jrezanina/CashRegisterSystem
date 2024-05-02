@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Prodej zboží";
+    ViewData["Title"] = "Kasa";
 }
 
 <div class="text-center mb-4">
@@ -52,7 +52,7 @@
                 <p class="text-dark mb-0">Celková částka: <span id="totalPrice" class="text-dark fw-bold">0</span> Kč</p>
             </div>
             <div class="col col-sm-3 d-flex justify-content-end">
-                <button class="btn btn-success d-inline-flex" id="addItemButton"><i class="bi bi-cart4 me-1"></i>Dokončit</button>
+                <button class="btn btn-success d-inline-flex" id="completeOrderButton"><i class="bi bi-cart4 me-1"></i>Dokončit</button>
             </div>
         </div>
     </div>
@@ -75,6 +75,40 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="completeOrderModal" tabindex="-1" aria-labelledby="completeOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="completeOrderModalLabel">Dokončení nákupu</h5>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <p class="text-dark mb-0">Celková částka: <span id="totalPriceModal" class="text-dark fw-bold">0</span> Kč</p>
+                </div>
+                <div class="mb-3">
+                    <p class="text-dark mb-0">Zaokrouhleno: <span id="totalPriceRoundedModal" class="text-dark fw-bold">0</span> Kč</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="receivedAmountInputModal">Přijato:</label>
+                    <input class="form-control" type="text" id="receivedAmountInputModal">
+                </div>
+                <div class="mb-3">
+                    <p class="text-dark mb-0">Zbývá vrátit: <span id="returnedAmountModal" class="text-dark fw-bold">0</span> Kč</p>
+                </div>
+                <div class="mb-3 form-check">
+                    <input class="form-check-input" type="checkbox" id="printReceiptCheckbox" checked>
+                    <label class="form-check-label" for="printReceiptCheckbox">Tisknout doklad</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger d-inline-flex" data-bs-dismiss="modal"><i class="bi bi-arrow-left me-1"></i>Zpět</button>
+                <button class="btn btn-success d-inline-flex" id="submitOrderButton"><i class="bi bi-cart4 me-1"></i>Dokončit nákup</button>
+            </div>
+        </div>
+    </div>
+</div>
+<iframe id="pdfFrame" style="display: none;"></iframe>
+
 @section Scripts
 {
     <script src="~/js/dialogs.js"></script>
@@ -85,10 +119,19 @@
                 orderItems = JSON.parse(savedOrderItems);
                 updateTable();
             }
+            resetInputs();
         });
 
         document.getElementById('addItemButton').addEventListener('click', function () {
             getOrderItem();
+        });
+
+        document.getElementById('completeOrderButton').addEventListener('click', function () {
+            completeOrder();
+        });
+
+        document.getElementById('submitOrderButton').addEventListener('click', function () {
+            submitOrder();
         });
 
         document.addEventListener('click', function (event) {
@@ -130,24 +173,29 @@
                         quantity: response.quantity,
                         priceSale: response.product.priceSale
                     }
-                    
+
                     addOrderItem(orderItem)
 
-                    let codeInput = document.getElementById("codeInput");
-
-                    document.getElementById("quantityInput").value = '1';
-                    codeInput.value = "";
-                    codeInput.focus();
-
+                    resetInputs();
                 },
                 error: function (response) {
+                    resetInputs();
                     alert(response.responseText);
                 }
             });
         }
+
+        function resetInputs() {
+            let codeInput = document.getElementById("codeInput");
+
+            document.getElementById("quantityInput").value = '1';
+            codeInput.value = "";
+            codeInput.focus();
+        }
     </script>
     <script>
         let orderItems = [];
+        let printReceipt = true;
 
         function addOrderItem(orderItem) {
             const eanCode = orderItem.eanCode || "";
@@ -228,9 +276,79 @@
             totalPriceElement.textContent = totalPrice.toFixed(2);
         }
 
-        function sendData() {
-            console.log(orderItems);
+        function completeOrder() {
+            
+            var orderData = [];
+
+            orderItems.forEach(function (item) {
+                var itemData = {
+                    eanCode: item.eanCode,
+                    sellerCode: item.sellerCode,
+                    quantity: item.quantity
+                };
+                orderData.push(itemData);
+            });
+
+            $.ajax({
+                url: '/Warehouse/CashRegister/CompleteOrder',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(orderData),
+                success: function (response) {
+                    var totalPriceElement = document.getElementById("totalPriceModal");
+                    var totalPriceRoundedElement = document.getElementById("totalPriceRoundedModal");
+                    totalPriceElement.textContent = response.toFixed(2);
+                    totalPriceRoundedElement.textContent = Math.round(response);
+                    $('#completeOrderModal').modal('show');
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
         }
+
+        function submitOrder() {
+            
+            var orderData = [];
+            printReceipt = document.getElementById("printReceiptCheckbox").checked;
+
+            orderItems.forEach(function (item) {
+                var itemData = {
+                    eanCode: item.eanCode,
+                    sellerCode: item.sellerCode,
+                    quantity: item.quantity
+                };
+                orderData.push(itemData);
+            });
+
+            $.ajax({
+                url: '/Warehouse/CashRegister/SubmitOrder',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(orderData),
+                success: function (response) {
+                    
+                    if (printReceipt)
+                    {
+                        var iframe = document.getElementById('pdfFrame');
+                        iframe.src = '/Warehouse/Sale/PrintReceipt?orderId=' + response;
+                        iframe.onload = function () {
+                            iframe.contentWindow.print();
+                        };
+                    }
+                    $('#completeOrderModal').modal('hide');
+                    orderItems = [];
+                    resetInputs();
+                    updateTable();
+                    localStorage.setItem('orderItems', JSON.stringify(orderItems));
+
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+        }
+
     </script>
     <script>
         var activeInputId = null;
@@ -259,6 +377,20 @@
                 input.value = input.value.slice(0, -1);
             }
         }
+    </script>
+    <script>
+        function calculateReturnedAmount() {
+            var receivedAmount = parseFloat(document.getElementById("receivedAmountInputModal").value);
+            
+            if (isNaN(receivedAmount)) receivedAmount = 0;
+
+            var totalAmount = parseFloat(document.getElementById("totalPriceRoundedModal").innerText);
+            var returnedAmount = receivedAmount - totalAmount;
+
+            document.getElementById("returnedAmountModal").textContent = returnedAmount;
+        }
+
+        document.getElementById("receivedAmountInputModal").addEventListener("input", calculateReturnedAmount);
     </script>
 }
 

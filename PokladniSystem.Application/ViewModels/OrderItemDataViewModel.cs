@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace PokladniSystem.Application.ViewModels
 {
-    public class OrderItemViewModel
+    public class OrderItemDataViewModel
     {
-        public Product? Product { get; set; }
+        public string EanCode { get; set; }
+        public string SellerCode { get; set; }
         public int Quantity { get; set; }
     }
 }

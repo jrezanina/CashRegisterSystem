@@ -72,10 +72,12 @@ builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider =>
 {
     var webRootPath = serviceProvider.GetService<IWebHostEnvironment>().WebRootPath;
     var dbContext = serviceProvider.GetService<CRSDbContext>();
+    var saleService = serviceProvider.GetService<ISaleService>();
     var companyService = serviceProvider.GetService<ICompanyService>();
     var storeService = serviceProvider.GetService<IStoreService>();
+    var productService = serviceProvider.GetService<IProductService>();
 
-    return new ReceiptService(webRootPath, dbContext, companyService, storeService);
+    return new ReceiptService(webRootPath, dbContext, saleService, companyService, storeService, productService);
 });
 
 var app = builder.Build();

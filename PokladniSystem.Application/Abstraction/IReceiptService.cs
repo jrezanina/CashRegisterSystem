@@ -11,7 +11,9 @@ namespace PokladniSystem.Application.Abstraction
 {
     public interface IReceiptService
     {
-        byte[] GeneratePDF(int rowCount);
-        Task<string> SavePDF(byte[] pdfBytes, string fileName, string folderName);
+        byte[] GenerateReceiptPDF(int rowCount);
+        string GetReceiptPath(int orderId);
+        Task<string> SaveReceiptPDFAsync(byte[] pdfBytes, string fileName, string folderName);
+        Task<string> GenerateReceiptAsync(int orderId);
     }
 }

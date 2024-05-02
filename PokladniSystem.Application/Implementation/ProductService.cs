@@ -157,6 +157,13 @@ namespace PokladniSystem.Application.Implementation
             }
         }
 
+        public Product GetProduct(int id)
+        {
+            Product product = _dbContext.Products.FirstOrDefault(p =>p.Id == id);
+
+            return product;
+        }
+
         public int GetProductPagesCount(int pageSize, int pageCount)
         {
             int totalPages = (int)Math.Ceiling((double)pageCount / pageSize);

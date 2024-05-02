@@ -23,24 +23,22 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="Product" asp-action="Index">Produkty</a>
-                        </li>
+
                         @if (User.Identity.IsAuthenticated)
                         {
                             if (User.IsInRole(nameof(Roles.Cashier)))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="CashRegister" asp-action="Index">Prodej</a>
+                                    <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="CashRegister" asp-action="Index">Kasa</a>
                                 </li>
                             }
-                            if (User.IsInRole(nameof(Roles.Admin)))
+                            if (User.IsInRole(nameof(Roles.Cashier)) || User.IsInRole(nameof(Roles.Manager)) || User.IsInRole(nameof(Roles.WarehouseAccountant)))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="Security" asp-controller="Account" asp-action="Index">Uživatelé</a>
+                                    <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="Product" asp-action="Index">Zboží</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="Settings" asp-controller="Company" asp-action="Edit">Společnost</a>
+                                    <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="Sale" asp-action="Index">Prodeje</a>
                                 </li>
                             }
                             if (User.IsInRole(nameof(Roles.WarehouseAccountant)))
@@ -53,6 +51,15 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="Store" asp-action="Index">Prodejny</a>
+                                </li>
+                            }
+                            if (User.IsInRole(nameof(Roles.Admin)))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="Security" asp-controller="Account" asp-action="Index">Uživatelé</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="Settings" asp-controller="Company" asp-action="Edit">Společnost</a>
                                 </li>
                             }
                         }
