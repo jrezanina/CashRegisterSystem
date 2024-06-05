@@ -18,6 +18,7 @@ namespace PokladniSystem.Controllers
     [Area("Security")]
     public class AccountController : Controller
     {
+        IHtmlSanitizerService _htmlSanitizerService;
         IAccountService _accountService;
         IHttpContextAccessor _contextAccessor;
         IValidator<LoginViewModel> _loginValidator;
@@ -25,10 +26,11 @@ namespace PokladniSystem.Controllers
         IValidator<AccountAdminEditViewModel> _accountAdminEditViewModelValidator;
         IValidator<AccountUserEditViewModel> _accountUserEditViewModelValidator;
 
-        public AccountController(IAccountService accountService, IHttpContextAccessor contextAccessor, IValidator<LoginViewModel> loginValidator, 
-            IValidator<RegisterViewModel> registerValidator, IValidator<AccountAdminEditViewModel> accountAdminEditViewModelValidator, 
+        public AccountController(IHtmlSanitizerService htmlSanitizerService, IAccountService accountService, IHttpContextAccessor contextAccessor, IValidator<LoginViewModel> loginValidator,
+            IValidator<RegisterViewModel> registerValidator, IValidator<AccountAdminEditViewModel> accountAdminEditViewModelValidator,
             IValidator<AccountUserEditViewModel> accountUserEditViewModelValidator)
         {
+            _htmlSanitizerService = htmlSanitizerService;
             _accountService = accountService;
             _contextAccessor = contextAccessor;
             _loginValidator = loginValidator;
@@ -53,6 +55,7 @@ namespace PokladniSystem.Controllers
         public async Task<IActionResult> Login(LoginViewModel viewModel)
         {
             viewModel.Active = await _accountService.AccountActiveAsync(viewModel.Username);
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _loginValidator.Validate(viewModel);
 
 
@@ -88,6 +91,7 @@ namespace PokladniSystem.Controllers
         public async Task<IActionResult> Register(RegisterViewModel viewModel)
         {
             viewModel.StoreId = (viewModel.Role == Roles.Cashier) ? viewModel.StoreId : null;
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _registerValidator.Validate(viewModel);
 
 
@@ -120,6 +124,7 @@ namespace PokladniSystem.Controllers
         {
             viewModel.Username = _contextAccessor.HttpContext.User.Identity.Name;
             viewModel.OldPasswordFailed = !await _accountService.PasswordValidAsync(viewModel.Username, viewModel.OldPassword);
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _accountUserEditViewModelValidator.Validate(viewModel);
 
 
@@ -146,8 +151,8 @@ namespace PokladniSystem.Controllers
         [Authorize(Roles = nameof(Roles.Admin))]
         public async Task<IActionResult> AdminEdit(AccountAdminEditViewModel viewModel)
         {
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _accountAdminEditViewModelValidator.Validate(viewModel);
-
 
             ModelState.Clear();
             if (!result.IsValid)

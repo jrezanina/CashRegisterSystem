@@ -1,83 +1,22 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Pokladní Systém";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <input type="text" id="inputField" placeholder="Zadejte EAN">
-    <button class="btn" id="printButton">Tisknout</button>
-
-    <input type="number" id="rowCount" placeholder="Zadejte počet řádků" required>
-    <button class="btn" id="generateButton">Generovat PDF</button>
-    <iframe id="pdfFrame" style="display: none;"></iframe>
-
-
+    <div class="mb-4">
+        <h1>@ViewData["Title"]</h1>
+    </div>
+    <p class="lead text-dark mb-4">Vítejte na hlavní stránce</p>
+    @{
+        if (User.Identity.IsAuthenticated)
+        {
+            <p class="lead text-dark mb-4">Jste přihlášen(a) jako: @User.Identity.Name</p>
+            <p class="lead text-dark mb-4">Pro změnu účtu se prosím <a class="lead text-black" asp-area="Security" asp-controller="Account" asp-action="Logout">odhlaste</a></p>
+        }
+        else
+        {
+            <p class="lead text-dark mb-4">Nejste přihlášen(a)</p>
+            <a class="btn btn-primary btn-lg" asp-area="Security" asp-controller="Account" asp-action="Login"><i class="bi bi-person-fill me-1"></i>Přihlásit se</a>
+        }
+    }
 </div>
-
-@section Scripts
-{
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
-    <script>
-        document.getElementById('printButton').addEventListener('click', function () {
-
-            var inputValue = document.getElementById('inputField').value.trim();
-
-            inputValue = inputValue.endsWith(':') ? inputValue.slice(0, -1) : inputValue;
-
-            $.ajax({
-                url: '/Home/Print',
-                type: 'GET',
-                data: { inputValue: inputValue },
-                success: function (contentToPrint) {
-                    console.log(contentToPrint);
-
-                    printJS({ printable: contentToPrint, type: 'raw-html' });
-                },
-                error: function (error) {
-                    console.error('Chyba:', error);
-                }
-            });
-        });
-
-        document.getElementById('inputField').addEventListener('input', function () {
-            var inputValue = this.value.trim();
-            if (inputValue.endsWith(':')) {
-                var inputValue = inputValue.slice(0, -1);
-
-                $.ajax({
-                    url: '/Home/Print',
-                    type: 'GET',
-                    data: { inputValue: inputValue },
-                    success: function (contentToPrint) {
-                        console.log(contentToPrint);
-
-                        printJS({ printable: contentToPrint, type: 'raw-html' });
-                    },
-                    error: function (error) {
-                        console.error('Chyba:', error);
-                    }
-                });
-
-                this.value = '';
-            }
-        });
-
-        document.getElementById('generateButton').addEventListener('click', function () {
-            var inputValue = document.getElementById('rowCount').value.trim();
-            $.ajax({
-                url: '/Home/GeneratePDF',
-                type: 'GET',
-                data: { rowCount: inputValue },
-                success: function (response) {
-
-                   var iframe = document.getElementById('pdfFrame');
-                    iframe.src = '/Home/GeneratePDF?rowCount=' + inputValue;
-                    iframe.onload = function () {
-                        iframe.contentWindow.print();
-                    };
-                }
-            });
-        });
-    </script>
-}

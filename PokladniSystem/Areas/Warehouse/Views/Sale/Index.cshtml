@@ -1,0 +1,185 @@
+﻿@using PokladniSystem.Infrastructure.Identity.Enums
+@model OrderListViewModel
+
+@{
+    ViewData["Title"] = "Seznam prodejů";
+}
+
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<form method="get" action="@Url.Action("Index")" id="columnsContainer" class="row">
+    <div class="col-sm mb-3">
+        <label class="form-label" asp-for="OrderIdSearch">Id prodeje:</label>
+        <input class="form-control" asp-for="OrderIdSearch">
+        <span asp-validation-for="OrderIdSearch" class="text-danger"></span>
+    </div>
+    <div class="col-sm mb-3">
+        <label class="form-label" asp-for="DateFrom">Datum od:</label>
+        <input type="text" class="form-control" id="dateFrom" asp-for="DateFrom">
+        <span asp-validation-for="DateFrom" class="text-danger"></span>
+    </div>
+    <div class="col-sm mb-3">
+        <label class="form-label" asp-for="DateTo">Datum do:</label>
+        <input type="text" class="form-control" id="dateTo" asp-for="DateTo">
+        <span asp-validation-for="DateTo" class="text-danger"></span>
+    </div>
+    @{
+        if (!User.IsInRole(nameof(Roles.Cashier)))
+        {
+            <div class="col-sm mb-3 column">
+                <label class="form-label" asp-for="StoreIdSearch">Prodejna:</label>
+                <select class="form-select" asp-for="StoreIdSearch">
+                    <option value="" selected>Nevybráno</option>
+                    @if (Model.Stores != null)
+                    {
+                        @foreach (var store in Model.Stores)
+                        {
+                            if (Model.StoreIdSearch != null && store.Id == Model.StoreIdSearch)
+                            {
+                                <option value="@store.Id" selected>@store.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@store.Id">@store.Name</option>
+                            }
+                        }
+                    }
+                </select>
+                <span asp-validation-for="StoreIdSearch" class="text-danger"></span>
+            </div>
+        }
+    }
+    <div class="col-sm d-flex align-items-end justify-content-start mb-3">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Vyhledat</button>
+    </div>
+</form>
+@{
+    if (Model != null && Model.Orders != null && Model.Orders.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Datum</th>
+                        <th scope="col">Id pokladní</th>
+                        <th scope="col">Název prodejny</th>
+                        <th scope="col">Celková částka</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @for (int i = 0; i < Model.Orders.Count; i++)
+                    {
+                        <tr>
+                            <th scope="row">@Model.Orders[i].Id</th>
+                            <td>@Model.Orders[i].DateTimeCreated.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                            <td>@Model.Orders[i].UserId</td>
+                            <td>@Model.Stores.First(s => s.Id == Model.Orders[i].StoreId).Name</td>
+                            <td>@Model.Orders[i].TotalPrice Kč</td>
+                            <td><a class="btn btn-info d-inline-flex open-btn" data-order-id="@Model.Orders[i].Id"><i class="bi bi-file-earmark-pdf me-1"></i>Otevřít</a></td>
+                            <td><a class="btn btn-success d-inline-flex print-btn" data-order-id="@Model.Orders[i].Id"><i class="bi bi-printer me-1"></i>Vytisknout</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Stránkování">
+                <ul class="pagination">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(Model.CurrentPage == i ? "active" : string.Empty)">
+                            <a class="page-link" asp-action="Index" asp-route-OrderIdSearch="@Model.OrderIdSearch" asp-route-DateFrom="@Model.DateFrom" asp-route-DateTo="@Model.DateTo" asp-route-StoreIdSearch="@Model.StoreIdSearch" asp-route-CurrentPage="@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+        <div class="row">
+            @{
+                <div class="col-sm mb-3">
+                    <p class="text-dark mb-0">Celková tržba: <span class="text-dark fw-bold">@Math.Round(@Model.TotalPrice, 2)</span> Kč</p>
+                </div>
+                foreach (var rate in Model.TotalVATPrices)
+                {
+                    <div class="col-sm mb-3">
+                        <p class="text-dark mb-0">DPH @rate.Key%: <span class="text-dark fw-bold">@Math.Round(@rate.Value, 2)</span> Kč</p>
+                    </div>
+                }
+            }
+        </div>
+    }
+    else
+    {
+        <p class="lead text-dark mb-4">Nebyly nalezeny žádné prodeje</p>
+    }
+}
+<iframe id="pdfFrame" style="display: none;"></iframe>
+
+@section Styles
+{
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+}
+
+@section Scripts
+{
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="~/lib/jquery/datepicker-cs.js"></script>
+    <script src="jquery.ui.datepicker-cs.js"></script>
+    <script>
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('open-btn') || event.target.closest('.open-btn')) {
+                var orderId = event.target.closest('.open-btn').getAttribute('data-order-id');
+                getReceipt(orderId, false);
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('printbtn') || event.target.closest('.print-btn')) {
+                var orderId = event.target.closest('.print-btn').getAttribute('data-order-id');
+                getReceipt(orderId, true);
+            }
+        });
+
+        function getReceipt(orderId, print) {
+            var url = '/Warehouse/Sale/GetReceipt?orderId=' + orderId
+            if (print) {
+                var iframe = document.getElementById('pdfFrame');
+                iframe.src = url;
+                iframe.onload = function () {
+                    iframe.contentWindow.print();
+                };
+            }
+            else {
+                window.open(url, '_blank');
+            }
+        }
+
+    </script>
+    <script>
+        $(function () {
+            $("#dateFrom").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                dateFormat: "mm-dd-yy",
+            });
+        });
+
+        $(function () {
+            $("#dateTo").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                dateFormat: "mm-dd-yy",
+            });
+        });
+
+    </script>
+
+}

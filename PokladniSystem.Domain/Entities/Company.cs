@@ -15,7 +15,6 @@ namespace PokladniSystem.Domain.Entities
         public string ICO { get; set; }
         public string? DIC { get; set; }
 
-        // Phone, Email, Web, Street optional, City, PostalCode, BuildingNumber required
         public Contact? Contact { get; set; }
     }
 }

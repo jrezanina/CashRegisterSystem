@@ -14,7 +14,10 @@ namespace PokladniSystem.Application.ViewModels
         public int TotalPages { get; set; }
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
+        public Dictionary<int, double> TotalVATPrices { get; set; }
+        public double TotalPrice { get; set; }
         public int? StoreIdSearch { get; set; }
+        public int? OrderIdSearch { get; set; }
         public int PageSize = 10;
 
         public IList<Store> Stores { get; set; }

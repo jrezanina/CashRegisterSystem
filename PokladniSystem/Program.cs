@@ -59,7 +59,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Security/Account/Logout";
     options.SlidingExpiration = true;
 });
-
+builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
 builder.Services.AddScoped<IAccountService, AccountIdentityService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IContactService, ContactService>();
@@ -76,8 +76,9 @@ builder.Services.AddScoped<IReceiptService, ReceiptService>(serviceProvider =>
     var companyService = serviceProvider.GetService<ICompanyService>();
     var storeService = serviceProvider.GetService<IStoreService>();
     var productService = serviceProvider.GetService<IProductService>();
+    var vatService = serviceProvider.GetService<IVATService>();
 
-    return new ReceiptService(webRootPath, dbContext, saleService, companyService, storeService, productService);
+    return new ReceiptService(webRootPath, dbContext, saleService, companyService, storeService, productService, vatService);
 });
 
 var app = builder.Build();

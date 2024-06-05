@@ -29,11 +29,12 @@ namespace PokladniSystem.Application.Implementation
         ICompanyService _companyService;
         IStoreService _storeService;
         IProductService _productService;
+        IVATService _vatService;
 
         string _rootPath;
         const float PointSize = 2.834f;
 
-        public ReceiptService(string rootPath, CRSDbContext dbContext, ISaleService saleService, ICompanyService companyService, IStoreService storeService, IProductService productService)
+        public ReceiptService(string rootPath, CRSDbContext dbContext, ISaleService saleService, ICompanyService companyService, IStoreService storeService, IProductService productService, IVATService vatService)
         {
             _dbContext = dbContext;
             _saleService = saleService;
@@ -41,6 +42,7 @@ namespace PokladniSystem.Application.Implementation
             _storeService = storeService;
             _rootPath = rootPath;
             _productService = productService;
+            _vatService = vatService;
 
         }
         public byte[] GenerateReceiptPDF(int orderId)
@@ -49,6 +51,7 @@ namespace PokladniSystem.Application.Implementation
             IList<OrderItem> orderItems = _saleService.GetOrderItems(orderId);
             CompanyViewModel companyVM = _companyService.GetCompanyViewModel();
             StoreViewModel storeVM = _storeService.GetStoreViewModels().FirstOrDefault(s => s.Store.Id == order.StoreId);
+            IList<VATRate> vatRates = _vatService.GetVATRates();
 
             var pageWidth = 58f;
 
@@ -72,120 +75,213 @@ namespace PokladniSystem.Application.Implementation
                     {
                         document.SetMargins(0, 0, 0, 0);
 
+                        string s;
+                        Paragraph p;
+                        Table t;
+
+
                         // Company header
-                        Paragraph companyHeaderP = new Paragraph(companyVM.Company.Name).SetTextAlignment(TextAlignment.CENTER).SetFont(fontBold).SetFontSize(largeFontSize);
-                        document.Add(companyHeaderP);
+                        p = new Paragraph(companyVM.Company.Name).SetTextAlignment(TextAlignment.CENTER).SetFont(fontBold).SetFontSize(largeFontSize);
+                        document.Add(p);
 
                         // Company address
-                        string companyAddress = $"{(companyVM.Contact.Street != null ? companyVM.Contact.Street : companyVM.Contact.City)} {companyVM.Contact.BuildingNumber},\n" +
+                        s = $"{(companyVM.Contact.Street != null ? companyVM.Contact.Street : companyVM.Contact.City)} {companyVM.Contact.BuildingNumber},\n" +
                             $"{companyVM.Contact.PostalCode} {companyVM.Contact.City}";
-                        Paragraph companyAddressP = new Paragraph(companyAddress).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
-                        document.Add(companyAddressP);
+                        p = new Paragraph(s).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
+                        document.Add(p);
 
                         // Company ICO and DIC
-                        string icoDic = $"IČO: {companyVM.Company.ICO}{(companyVM.Company.DIC != null ? $", DIČ: {companyVM.Company.DIC}" : string.Empty)}";
-                        Paragraph icoDicP = new Paragraph(icoDic).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
-                        document.Add(icoDicP);
+                        s = $"IČO: {companyVM.Company.ICO}{(companyVM.Company.DIC != null ? $", DIČ: {companyVM.Company.DIC}" : string.Empty)}";
+                        p = new Paragraph(s).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
+                        document.Add(p);
+
+                        // Company contact
+                        if (companyVM.Contact.Phone != null)
+                        {
+                            t = new Table(2)
+                                .AddCell(new Cell().Add(new Paragraph("Tel.:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
+                                .AddCell(new Cell().Add(new Paragraph(companyVM.Contact.Phone)).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
+
+                            t.SetBorder(Border.NO_BORDER);
+                            t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                            document.Add(t);
+                        }
+
+                        if (companyVM.Contact.Email != null)
+                        {
+                            t = new Table(2)
+                                .AddCell(new Cell().Add(new Paragraph("Email:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
+                                .AddCell(new Cell().Add(new Paragraph(companyVM.Contact.Email)).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
+
+                            t.SetBorder(Border.NO_BORDER);
+                            t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                            document.Add(t);
+                        }
+
+                        if (companyVM.Contact.Web != null)
+                        {
+                            t = new Table(2)
+                                .AddCell(new Cell().Add(new Paragraph("Web:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
+                                .AddCell(new Cell().Add(new Paragraph(companyVM.Contact.Web)).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
+
+                            t.SetBorder(Border.NO_BORDER);
+                            t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                            document.Add(t);
+                        }
 
                         // Separator
-                        LineSeparator lineSeparator = new LineSeparator(new SolidLine()).SetWidth(UnitValue.CreatePercentValue(100));
-                        Paragraph lineSeparatorP = new Paragraph().Add(lineSeparator);
-                        document.Add(lineSeparatorP);
+                        LineSeparator ls = new LineSeparator(new SolidLine()).SetWidth(UnitValue.CreatePercentValue(100));
+                        p = new Paragraph().Add(ls);
+                        document.Add(p);
 
                         // Store header
-                        Paragraph storeHeaderP = new Paragraph("Prodejna:").SetTextAlignment(TextAlignment.CENTER).SetFont(fontBold).SetFontSize(mediumFontSize);
-                        document.Add(storeHeaderP);
+                        p = new Paragraph("Prodejna:").SetTextAlignment(TextAlignment.CENTER).SetFont(fontBold).SetFontSize(mediumFontSize);
+                        document.Add(p);
 
-                        string storeName = $"{storeVM.Store.Name}";
-                        Paragraph storeNameP = new Paragraph(storeName).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
-                        document.Add(storeNameP);
+                        s = $"{storeVM.Store.Name}";
+                        p = new Paragraph(s).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
+                        document.Add(p);
 
                         // Store address
-                        string storeAddress = $"{(storeVM.Contact.Street != null ? storeVM.Contact.Street : storeVM.Contact.City)} {storeVM.Contact.BuildingNumber},\n" +
+                        s = $"{(storeVM.Contact.Street != null ? storeVM.Contact.Street : storeVM.Contact.City)} {storeVM.Contact.BuildingNumber},\n" +
                             $"{(storeVM.Contact.PostalCode)} {storeVM.Contact.City}";
-                        Paragraph storeAddressP = new Paragraph(storeAddress).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
-                        document.Add(storeAddressP);
+                        p = new Paragraph(s).SetTextAlignment(TextAlignment.CENTER).SetFont(fontRegular).SetFontSize(smallFontSize);
+                        document.Add(p);
+
+                        // Store contact
+                        if (storeVM.Contact.Phone != null)
+                        {
+                            t = new Table(2)
+                                .AddCell(new Cell().Add(new Paragraph("Tel.:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
+                                .AddCell(new Cell().Add(new Paragraph(storeVM.Contact.Phone)).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
+
+                            t.SetBorder(Border.NO_BORDER);
+                            t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                            document.Add(t);
+                        }
+
+                        if (storeVM.Contact.Email != null)
+                        {
+                            t = new Table(2)
+                                .AddCell(new Cell().Add(new Paragraph("Email:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
+                                .AddCell(new Cell().Add(new Paragraph(storeVM.Contact.Email)).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
+
+                            t.SetBorder(Border.NO_BORDER);
+                            t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                            document.Add(t);
+                        }
+
+                        if (storeVM.Contact.Web != null)
+                        {
+                            t = new Table(2)
+                                .AddCell(new Cell().Add(new Paragraph("Web:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
+                                .AddCell(new Cell().Add(new Paragraph(storeVM.Contact.Web)).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
+
+                            t.SetBorder(Border.NO_BORDER);
+                            t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                            document.Add(t);
+                        }
 
                         // Separator
-                        document.Add(lineSeparatorP);
+                        document.Add(ls);
 
                         // Order items
-                        Table orderItemsT = new Table(3)
-                            .AddCell(new Cell().Add(new Paragraph("Název")).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(mediumFontSize)
+                        t = new Table(3)
+                            .AddCell(new Cell().Add(new Paragraph("Název / DPH")).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(mediumFontSize)
                             .AddCell(new Cell().Add(new Paragraph("Ks")).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(mediumFontSize)
                             .AddCell(new Cell().Add(new Paragraph("Cena")).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(mediumFontSize);
 
-                        orderItemsT.SetBorder(Border.NO_BORDER);
+                        t.SetBorder(Border.NO_BORDER);
 
 
                         foreach (var item in orderItems)
                         {
-                            orderItemsT.AddCell(new Cell().Add(new Paragraph(_productService.GetProduct(item.ProductId).ShortName)).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(70f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
-                            orderItemsT.AddCell(new Cell().Add(new Paragraph(((int)item.Quantity).ToString())).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(10f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
-                            orderItemsT.AddCell(new Cell().Add(new Paragraph(_productService.GetProduct(item.ProductId).PriceSale.ToString())).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(20f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
-                            orderItemsT.AddCell(new Cell().Add(new Paragraph(String.Empty)).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(70f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
-                            orderItemsT.AddCell(new Cell().Add(new Paragraph(String.Empty)).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(10f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
-                            orderItemsT.AddCell(new Cell().Add(new Paragraph(item.Price.ToString())).SetFontSize(mediumFontSize).SetWidth(UnitValue.CreatePercentValue(20f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
+                            t.AddCell(new Cell().Add(new Paragraph(_productService.GetProduct(item.ProductId).ShortName)).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(70f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
+                            t.AddCell(new Cell().Add(new Paragraph(((int)item.Quantity).ToString())).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(10f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
+                            t.AddCell(new Cell().Add(new Paragraph(_productService.GetProduct(item.ProductId).PriceSale.ToString())).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(20f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
+                            t.AddCell(new Cell().Add(new Paragraph($"{_vatService.GetVATRates().FirstOrDefault(v => v.Id == _productService.GetProduct(item.ProductId).VATRateId).Rate.ToString()}%")).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(70f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
+                            t.AddCell(new Cell().Add(new Paragraph(String.Empty)).SetFontSize(smallFontSize).SetWidth(UnitValue.CreatePercentValue(10f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
+                            t.AddCell(new Cell().Add(new Paragraph(item.Price.ToString())).SetFontSize(mediumFontSize).SetWidth(UnitValue.CreatePercentValue(20f)).SetBorder(Border.NO_BORDER)).SetFont(fontRegular);
                         }
 
-                        orderItemsT.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+                        t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
 
-                        document.Add(orderItemsT);
+                        document.Add(t);
 
                         // Separator
-                        document.Add(lineSeparatorP);
+                        document.Add(ls);
 
-                        // TotalPrice
-                        Table totalPriceT = new Table(2)
+                        // Total price
+                        t = new Table(2)
                             .AddCell(new Cell().Add(new Paragraph("Součet:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontBold).SetFontSize(mediumFontSize)
                             .AddCell(new Cell().Add(new Paragraph($"{Math.Round((double)order.TotalPrice, 2).ToString()} Kč")).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontBold).SetFontSize(mediumFontSize);
 
-                        totalPriceT.SetBorder(Border.NO_BORDER);
-                        totalPriceT.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
-                     
-                        document.Add(totalPriceT);
+                        t.SetBorder(Border.NO_BORDER);
+                        t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                        document.Add(t);
+
+                        // DPH Prices
+                        foreach (var vatPrice in _saleService.GetOrderVATPrices(orderId))
+                        {
+                            t = new Table(2)
+                                .AddCell(new Cell().Add(new Paragraph($"DPH {vatPrice.VATRate.ToString()}%")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
+                                .AddCell(new Cell().Add(new Paragraph($"{Math.Round((double)vatPrice.VATPrice, 2).ToString()} Kč")).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
+
+                            t.SetBorder(Border.NO_BORDER);
+                            t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                            document.Add(t);
+
+                        }
 
                         // Separator
-                        document.Add(lineSeparatorP);
+                        document.Add(ls);
 
                         // Order id
-                        Table orderIdT = new Table(2)
+                        t = new Table(2)
                             .AddCell(new Cell().Add(new Paragraph("Doklad č.:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
                             .AddCell(new Cell().Add(new Paragraph(order.Id.ToString())).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
 
-                        orderIdT.SetBorder(Border.NO_BORDER);
-                        orderIdT.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+                        t.SetBorder(Border.NO_BORDER);
+                        t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
 
-                        document.Add(orderIdT);
+                        document.Add(t);
 
                         // Cashier id
-                        Table cashierIdT = new Table(2)
+                        t = new Table(2)
                             .AddCell(new Cell().Add(new Paragraph("Pokladní č.:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
                             .AddCell(new Cell().Add(new Paragraph(order.UserId.ToString())).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
 
-                        cashierIdT.SetBorder(Border.NO_BORDER);
-                        cashierIdT.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+                        t.SetBorder(Border.NO_BORDER);
+                        t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
 
-                        document.Add(cashierIdT);
+                        document.Add(t);
 
                         // Date and time
-                        Table dateT = new Table(2)
+                        t = new Table(2)
                             .AddCell(new Cell().Add(new Paragraph("Datum:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
                             .AddCell(new Cell().Add(new Paragraph(order.DateTimeCreated.Date.ToString("dd.MM.yyyy"))).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
 
-                        dateT.SetBorder(Border.NO_BORDER);
-                        dateT.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+                        t.SetBorder(Border.NO_BORDER);
+                        t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
 
-                        document.Add(dateT);
+                        document.Add(t);
 
-                        Table timeT = new Table(2)
+                        t = new Table(2)
                             .AddCell(new Cell().Add(new Paragraph("Čas:")).SetTextAlignment(TextAlignment.LEFT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize)
                             .AddCell(new Cell().Add(new Paragraph(order.DateTimeCreated.ToString("HH:mm:ss"))).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER)).SetFont(fontRegular).SetFontSize(smallFontSize);
 
-                        timeT.SetBorder(Border.NO_BORDER);
-                        timeT.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
-                        
-                        document.Add(timeT);
+                        t.SetBorder(Border.NO_BORDER);
+                        t.SetWidth(UnitValue.CreatePointValue(pageWidthInPoints - borderMargin * PointSize));
+
+                        document.Add(t);
                     }
                 }
                 return ms.ToArray();
@@ -226,7 +322,7 @@ namespace PokladniSystem.Application.Implementation
         {
             Order order = _saleService.GetOrder(orderId);
 
-            if ( order != null)
+            if (order != null)
             {
                 return order.ReceiptSrc;
             }

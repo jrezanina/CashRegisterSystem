@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Kasa";
+    ViewData["Title"] = "Pokladna";
 }
 
 <div class="text-center mb-4">
@@ -331,7 +331,7 @@
                     if (printReceipt)
                     {
                         var iframe = document.getElementById('pdfFrame');
-                        iframe.src = '/Warehouse/Sale/PrintReceipt?orderId=' + response;
+                        iframe.src = '/Warehouse/Sale/GetReceipt?orderId=' + response;
                         iframe.onload = function () {
                             iframe.contentWindow.print();
                         };

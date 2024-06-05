@@ -110,8 +110,13 @@
                         <th scope="col">Název</th>
                         <th scope="col">Zkrácený název</th>
                         <th scope="col">Popis</th>
-                        <th scope="col">Cena bez DPH</th>
-                        <th scope="col">Cena s DPH</th>
+                        @{
+                            if (User.IsInRole(nameof(Roles.Manager)) || User.IsInRole(nameof(Roles.WarehouseAccountant)))
+                            {
+                                <th scope="col">Cena bez DPH</th>
+                                <th scope="col">Cena s DPH</th>
+                            }
+                        }
                         <th scope="col">Prodejní cena</th>
                         <th scope="col"></th>
                         <th scope="col"></th>
@@ -128,9 +133,14 @@
                             <td>@Model.Products[i].Name</td>
                             <td>@Model.Products[i].ShortName</td>
                             <td>@Model.Products[i].Description</td>
-                            <td>@Model.Products[i].PriceVATFree</td>
-                            <td>@Model.Products[i].PriceVAT</td>
-                            <td>@Model.Products[i].PriceSale</td>
+                            @{
+                                if (User.IsInRole(nameof(Roles.Manager)) || User.IsInRole(nameof(Roles.WarehouseAccountant)))
+                                {
+                                    <td>@Model.Products[i].PriceVATFree Kč</td>
+                                    <td>@Model.Products[i].PriceVAT Kč</td>
+                                }
+                            }
+                            <td>@Model.Products[i].PriceSale Kč</td>
                             @if (User.IsInRole(nameof(Roles.WarehouseAccountant)) || User.IsInRole(nameof(Roles.Manager)))
                             {
                                 <td><a class="btn btn-warning d-inline-flex" asp-action="Edit" asp-route-id="@Model.Products[i].Id"><i class="bi bi-pencil me-1"></i>Upravit</a></td>

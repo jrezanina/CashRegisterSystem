@@ -19,6 +19,7 @@ namespace PokladniSystem.Infrastructure.Database
         public DbSet<Supply> Supplies { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<OrderVATPrice> OrderVATPrices { get; set; }
         public DbSet<VATRate> VATRates { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Company> Company { get; set; }
@@ -31,14 +32,17 @@ namespace PokladniSystem.Infrastructure.Database
 
             DatabaseInit dbInit = new DatabaseInit();
 
-            modelBuilder.Entity<VATRate>().HasData(dbInit.GetDefaultVATRates());
-            modelBuilder.Entity<Category>().HasData(dbInit.GetDefaultCategories());
-            modelBuilder.Entity<Product>().HasData(dbInit.GetDefaultProducts());
-            modelBuilder.Entity<ProductCategory>().HasData(dbInit.GetDefaultProductCategories());
-            modelBuilder.Entity<Contact>().HasData(dbInit.GetUTBCompanyContact());
-            modelBuilder.Entity<Company>().HasData(dbInit.GetUTBCompanyInformations());
-            modelBuilder.Entity<Contact>().HasData(dbInit.GetFAIStoreContact());
-            modelBuilder.Entity<Store>().HasData(dbInit.GetFAIStoreInformations());
+            //modelBuilder.Entity<VATRate>().HasData(dbInit.GetDefaultVATRates());
+            //modelBuilder.Entity<Category>().HasData(dbInit.GetDefaultCategories());
+            //modelBuilder.Entity<Product>().HasData(dbInit.GetDefaultProducts());
+            //modelBuilder.Entity<ProductCategory>().HasData(dbInit.GetDefaultProductCategories());
+            //modelBuilder.Entity<Contact>().HasData(dbInit.GetUTBCompanyContact());
+            //modelBuilder.Entity<Company>().HasData(dbInit.GetUTBCompanyInformations());
+            //modelBuilder.Entity<Contact>().HasData(dbInit.GetFAIStoreContact());
+            //modelBuilder.Entity<Store>().HasData(dbInit.GetFAIStoreInformations());
+
+            modelBuilder.Entity<Contact>().HasData(dbInit.GetDefaultCompanyContact());
+            modelBuilder.Entity<Company>().HasData(dbInit.GetDefaultCompanyInformations());
             modelBuilder.Entity<Order>().HasOne<User>(e => e.User as User);
         }
     }

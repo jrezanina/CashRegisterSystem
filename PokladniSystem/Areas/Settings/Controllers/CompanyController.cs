@@ -4,6 +4,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokladniSystem.Application.Abstraction;
+using PokladniSystem.Application.Implementation;
 using PokladniSystem.Application.ViewModels;
 using PokladniSystem.Controllers;
 using PokladniSystem.Domain.Entities;
@@ -15,11 +16,13 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
     [Authorize(Roles = nameof(Roles.Admin))]
     public class CompanyController : Controller
     {
+        IHtmlSanitizerService _htmlSanitizerService;
         ICompanyService _companyService;
         IContactService _contactService;
         IValidator<CompanyViewModel> _companyViewModelValidator;
-        public CompanyController(ICompanyService companyService, IContactService contactService, IValidator<CompanyViewModel> companyViewModelValidator)
+        public CompanyController(IHtmlSanitizerService htmlSanitizerService, ICompanyService companyService, IContactService contactService, IValidator<CompanyViewModel> companyViewModelValidator)
         {
+            _htmlSanitizerService = htmlSanitizerService;
             _companyService = companyService;
             _contactService = contactService;
             _companyViewModelValidator = companyViewModelValidator;
@@ -35,8 +38,8 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         [HttpPost]
         public IActionResult Edit(CompanyViewModel viewModel)
         {
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _companyViewModelValidator.Validate(viewModel);
-
 
             ModelState.Clear();
             if (!result.IsValid)

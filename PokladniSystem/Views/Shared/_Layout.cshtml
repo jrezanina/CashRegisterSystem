@@ -29,7 +29,7 @@
                             if (User.IsInRole(nameof(Roles.Cashier)))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="CashRegister" asp-action="Index">Kasa</a>
+                                    <a class="nav-link text-dark" asp-area="Warehouse" asp-controller="CashRegister" asp-action="Index">Pokladna</a>
                                 </li>
                             }
                             if (User.IsInRole(nameof(Roles.Cashier)) || User.IsInRole(nameof(Roles.Manager)) || User.IsInRole(nameof(Roles.WarehouseAccountant)))

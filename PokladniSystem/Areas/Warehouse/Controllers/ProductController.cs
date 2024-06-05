@@ -19,12 +19,14 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
     [Authorize]
     public class ProductController : Controller
     {
+        IHtmlSanitizerService _htmlSanitizerService;
         IProductService _productService;
         IAccountService _accountService;
         IValidator<ProductViewModel> _productViewModelValidator;
         IValidator<SupplyViewModel> _supplyViewModelValidator;
-        public ProductController(IProductService productService, IAccountService accountService, IValidator<ProductViewModel> productViewModelValidator, IValidator<SupplyViewModel> supplyViewModelValidator)
+        public ProductController(IHtmlSanitizerService htmlSanitizerService, IProductService productService, IAccountService accountService, IValidator<ProductViewModel> productViewModelValidator, IValidator<SupplyViewModel> supplyViewModelValidator)
         {
+            _htmlSanitizerService = htmlSanitizerService;
             _productService = productService;
             _accountService = accountService;
             _productViewModelValidator = productViewModelValidator;
@@ -57,6 +59,7 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         public async Task<IActionResult> Create(ProductViewModel viewModel)
         {
             viewModel = await _productService.GetProductViewModelAsync(viewModel);
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _productViewModelValidator.Validate(viewModel);
 
             ModelState.Clear();
@@ -88,6 +91,7 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         public async Task<IActionResult> Edit(ProductViewModel viewModel)
         {
             viewModel = await _productService.GetProductViewModelAsync(viewModel);
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _productViewModelValidator.Validate(viewModel);
 
             ModelState.Clear();

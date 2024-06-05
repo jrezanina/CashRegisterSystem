@@ -14,11 +14,13 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
     [Authorize(Roles = nameof(Roles.WarehouseAccountant))]
     public class StoreController : Controller
     {
+        IHtmlSanitizerService _htmlSanitizerService;
         IStoreService _storeService;
         IContactService _contactService;
         IValidator<StoreViewModel> _storeViewModelValidator;
-        public StoreController(IStoreService storeService, IContactService contactService, IValidator<StoreViewModel> storeViewModelValidator)
+        public StoreController(IHtmlSanitizerService sanitizerService, IStoreService storeService, IContactService contactService, IValidator<StoreViewModel> storeViewModelValidator)
         {
+            _htmlSanitizerService = sanitizerService;
             _storeService = storeService;
             _contactService = contactService;
             _storeViewModelValidator = storeViewModelValidator;
@@ -39,7 +41,7 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         [HttpPost]
         public IActionResult Create(StoreViewModel viewModel)
         {
-
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _storeViewModelValidator.Validate(viewModel);
 
             ModelState.Clear();
@@ -65,8 +67,8 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         [HttpPost]
         public IActionResult Edit(StoreViewModel viewModel)
         {
+            viewModel = _htmlSanitizerService.Sanitize(viewModel);
             ValidationResult result = _storeViewModelValidator.Validate(viewModel);
-
 
             ModelState.Clear();
             if (!result.IsValid)
@@ -74,8 +76,6 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
                 result.AddToModelState(this.ModelState);
                 return View(viewModel);
             }
-
-            //viewModel.Contact.Id = viewModel.Store.ContactId;
 
             if (_contactService.Edit(viewModel.Contact))
                 _storeService.Edit(viewModel.Store);

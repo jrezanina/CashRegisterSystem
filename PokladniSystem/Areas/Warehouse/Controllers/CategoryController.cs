@@ -14,10 +14,12 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
     [Authorize(Roles = nameof(Roles.WarehouseAccountant))]
     public class CategoryController : Controller
     {
+        IHtmlSanitizerService _htmlSanitizerService;
         ICategoryService _categoryService;
         IValidator<Category> _categoryValidator;
-        public CategoryController(ICategoryService categoryService, IValidator<Category> categoryValidator)
+        public CategoryController(IHtmlSanitizerService htmlSanitizerService, ICategoryService categoryService, IValidator<Category> categoryValidator)
         {
+            _htmlSanitizerService = htmlSanitizerService;
             _categoryService = categoryService;
             _categoryValidator = categoryValidator;
         }
@@ -37,7 +39,7 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         [HttpPost]
         public IActionResult Create(Category category) 
         {
-
+            category = _htmlSanitizerService.Sanitize(category);
             ValidationResult result = _categoryValidator.Validate(category);
 
 
@@ -63,8 +65,8 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
         [HttpPost]
         public IActionResult Edit(Category category)
         {
+            category = _htmlSanitizerService.Sanitize(category);
             ValidationResult result = _categoryValidator.Validate(category);
-
 
             ModelState.Clear();
             if (!result.IsValid)

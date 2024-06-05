@@ -13,7 +13,6 @@ namespace PokladniSystem.Domain.Entities
         [ForeignKey(nameof(Contact))]
         public int ContactId { get; set; }
 
-        // Phone, Email, Web, Street optional, City, PostalCode, BuildingNumber required
         public Contact? Contact { get; set; }
     }
 }

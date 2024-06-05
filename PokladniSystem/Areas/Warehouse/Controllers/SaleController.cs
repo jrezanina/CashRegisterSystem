@@ -31,13 +31,21 @@ namespace PokladniSystem.Web.Areas.Warehouse.Controllers
             _receiptService = receiptService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(OrderListViewModel viewModel)
         {
-            return View();
+            if (User.IsInRole(nameof(Roles.Cashier)))
+            {
+                User user = await _accountService.GetUserAsync(User.Identity.Name);
+                viewModel.StoreIdSearch = user.StoreId;
+            }
+
+            viewModel = await _saleService.GetOrderListViewModelAsync(viewModel);
+
+            return View(viewModel);
         }
 
         [HttpGet]
-        public ActionResult PrintReceipt(int orderId)
+        public ActionResult GetReceipt(int orderId)
         {
             var receiptPath = _receiptService.GetReceiptPath(orderId);
 
